@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Weinerville</title>
+<style>html,body{margin:0;background:#0b0d12;overflow:hidden;font-family:sans-serif;touch-action:none;-webkit-user-select:none;user-select:none}
+canvas{display:block;cursor:crosshair}
+#hud{position:fixed;top:12px;left:12px;color:#ffcf6b;font-weight:bold;font-size:20px;text-shadow:0 0 8px #000;z-index:2}
+#timer{position:fixed;top:12px;left:50%;transform:translateX(-50%);color:#fff;font-weight:bold;font-size:26px;text-shadow:0 0 8px #000;z-index:2}
+#timer.warn{color:#ff6a5a}
+#bars{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;gap:7px;width:260px}
+.bar{position:relative;height:16px;border-radius:9px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.12);overflow:hidden}
+.bar i{position:absolute;inset:0;transform-origin:left;transition:transform .12s}
+.bar span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;color:#fff;text-shadow:0 1px 2px #000;letter-spacing:.06em}
+#hpFill{background:linear-gradient(90deg,#5fd06a,#8ef07a)}
+#hpBar.low #hpFill{background:linear-gradient(90deg,#ff5a4d,#ff9a4d)}
+#amFill{background:linear-gradient(90deg,#e0a52e,#ffe27a)}
+#amBar.empty #amFill{background:linear-gradient(90deg,#7a3a3a,#ff6a5a)}
+#mini{position:fixed;bottom:14px;right:14px;border:1px solid rgba(255,255,255,.15);border-radius:8px;background:rgba(0,0,0,.4);z-index:2}
+#dead{position:fixed;inset:0;display:none;align-items:center;justify-content:center;color:#ff6a5a;font-size:40px;font-weight:bold;background:rgba(0,0,0,.4);z-index:2}
+#over{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(8,6,10,.9);z-index:5;color:#fff}
+#over.show{display:flex}
+#over h2{color:#ffcf6b;letter-spacing:.2em;text-transform:uppercase;font-size:16px;margin:0 0 4px}
+#over .win{font-size:34px;font-weight:800;margin:0 0 18px;text-shadow:0 0 30px rgba(255,207,107,.6)}
+#over .row{display:flex;gap:12px;font-size:16px;padding:4px 14px;min-width:220px}
+#over .row .pos{color:#8a7a68;width:22px}
+#over .row .nm{flex:1}
+#over .row .sc{font-weight:bold}
+#over .next{margin-top:18px;color:#8a7a68;font-size:13px;letter-spacing:.14em;text-transform:uppercase}
+#intro{position:fixed;inset:0;background:#000;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .6s}
+#logoWrap{position:relative;display:flex;flex-direction:column;align-items:center}
+#introLogo{width:min(60vw,520px);opacity:0;transition:opacity .8s;transform-origin:50% 100%}
+#introLogo.show{opacity:1}
+#introLogo.squash{animation:sq .5s cubic-bezier(.3,1.2,.5,1) forwards}
+@keyframes sq{0%{transform:scaleY(1) scaleX(1)}45%{transform:scaleY(.15) scaleX(1.2)}100%{transform:scaleY(.2) scaleX(1.15)}}
+#presents{margin-top:10px;color:#8a7a68;font-size:13px;letter-spacing:.32em;text-transform:uppercase;opacity:0;transition:opacity .7s}
+#presents.show{opacity:1}
+#introSaus{position:absolute;width:min(22vw,150px);transform:translateY(-120vh);z-index:11}
+#introSaus.drop{transition:transform .45s cubic-bezier(.5,0,.9,1);transform:translateY(-8vh)}
+#introTitle{position:absolute;top:20%;color:#fff;font-size:clamp(34px,9vw,72px);font-weight:800;opacity:0;transition:opacity .4s;text-shadow:0 0 30px rgba(255,207,107,.6)}
+#introTitle small{font-size:.4em;color:#ffcf6b}
+#introHint{position:absolute;bottom:8%;color:#8a7a68;font-size:14px;letter-spacing:.2em;text-transform:uppercase;opacity:0;transition:opacity
