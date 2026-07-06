@@ -88,4 +88,28 @@ setInterval(() => {
   if (phase==="playing"){
     matchTimer -= dt;
     updateBots(dt);
-    for (const id in players){ const p=players[id];
+    for (const id in players){ const p=players[id]; if(!p.dead && !p.bot) pickPellets(p); }
+    if (pellets.length<MAX_PELLETS && Math.random()<0.22) spawnPellet();
+    for (let i = bullets.length - 1; i >= 0; i--) {
+      const bl = bullets[i];
+      bl.x += bl.vx * dt; bl.y += bl.vy * dt; bl.life -= dt;
+      let gone = false;
+      if (inBuilding(bl.x, bl.y)) gone = true;
+      for (const id in players) {
+        const p = players[id];
+        if (p.dead || id === bl.owner) continue;
+        if (Math.hypot(bl.x - p.x, bl.y - p.y) < 24) {
+          p.hp -= 25; gone = true;
+          if (p.hp <= 0) { p.dead = true; const k=players[bl.owner]; if(k){ k.score++; k.hp=Math.min(100,k.hp+25); } setTimeout(()=>{ if(players[id]&&phase==="playing") spawn(players[id]); }, 2000); }
+          break;
+        }
+      }
+      if (gone || bl.life <= 0 || bl.x<0||bl.y<0||bl.x>WORLD_W||bl.y>WORLD_H) bullets.splice(i, 1);
+    }
+    if (matchTimer<=0){ phase="over"; overTimer=6; lastRank = Object.values(players).map(p=>({name:p.name,score:p.score})).sort((a,b)=>b.score-a.score).slice(0,8); }
+  } else { overTimer -= dt; if (overTimer<=0) newMatch(); }
+  const snapshot = JSON.stringify({ type:"state", players, bullets, pellets, timer:Math.max(0,Math.ceil(matchTimer)), phase, rank:lastRank });
+  wss.clients.forEach(c => { if (c.readyState === 1) c.send(snapshot); });
+}, 1000/30);
+const PORT = process.env.PORT || 2567;
+server.listen(PORT, () => console.log("Server acceso su http://localhost:" + PORT));
