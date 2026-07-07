@@ -62,20 +62,21 @@ canvas{display:block;cursor:crosshair}
 #logoWrap{position:relative;display:flex;flex-direction:column;align-items:center}
 #introLogo{width:min(60vw,520px);opacity:0;transition:opacity .8s;transform-origin:50% 100%}
 #introLogo.show{opacity:1}
-#introLogo.squash{animation:sq .5s cubic-bezier(.3,1.2,.5,1) forwards}
-@keyframes sq{0%{transform:scaleY(1) scaleX(1)}45%{transform:scaleY(.15) scaleX(1.2)}100%{transform:scaleY(.2) scaleX(1.15)}}
+#introLogo.squash{animation:sq .7s cubic-bezier(.3,1.3,.55,1) forwards}
+@keyframes sq{0%{transform:scaleY(1) scaleX(1)}35%{transform:scaleY(.6) scaleX(1.12)}60%{transform:scaleY(.82) scaleX(1.04)}80%{transform:scaleY(.68) scaleX(1.08)}100%{transform:scaleY(.74) scaleX(1.05)}}
 #presents{margin-top:10px;color:#8a7a68;font-size:13px;letter-spacing:.32em;text-transform:uppercase;opacity:0;transition:opacity 1.1s ease-in}
 #presents.show{opacity:1}
-#introSaus{position:absolute;left:50%;top:50%;width:min(24vw,170px);margin-left:calc(min(24vw,170px) / -2);z-index:11;filter:drop-shadow(0 10px 22px rgba(255,140,60,.35));transform:translateY(-120vh)}
-#introSaus.drop{animation:fall 1.25s cubic-bezier(.4,0,.75,1) forwards}
+#introSaus{position:absolute;left:50%;top:50%;width:min(28vw,200px);margin-left:calc(min(28vw,200px) / -2);z-index:11;filter:drop-shadow(0 12px 26px rgba(255,140,60,.4));transform:translateY(-120vh)}
+#introSaus.drop{animation:fall 1.45s linear forwards}
 @keyframes fall{
-  0%{transform:translateY(-120vh) scaleY(1) scaleX(1)}
-  50%{transform:translateY(-6vh) scaleY(1.3) scaleX(0.74)}
-  63%{transform:translateY(-20vh) scaleY(0.84) scaleX(1.18)}
-  74%{transform:translateY(-8vh) scaleY(1.16) scaleX(0.9)}
-  84%{transform:translateY(-15vh) scaleY(0.95) scaleX(1.05)}
-  92%{transform:translateY(-9vh) scaleY(1.04) scaleX(0.98)}
-  100%{transform:translateY(-11vh) scaleY(1) scaleX(1)}
+  0%{transform:translateY(-120vh) scaleY(1.06) scaleX(0.95)}
+  40%{transform:translateY(-55vh) scaleY(1.1) scaleX(0.92)}
+  58%{transform:translateY(-8vh) scaleY(1.22) scaleX(0.82)}
+  66%{transform:translateY(-2vh) scaleY(0.78) scaleX(1.22)}
+  76%{transform:translateY(-12vh) scaleY(1.09) scaleX(0.93)}
+  85%{transform:translateY(-5vh) scaleY(0.96) scaleX(1.05)}
+  93%{transform:translateY(-8vh) scaleY(1.02) scaleX(0.99)}
+  100%{transform:translateY(-6vh) scaleY(1) scaleX(1)}
 }
 #introTitle{position:absolute;top:20%;color:#fff;font-size:clamp(34px,9vw,72px);font-weight:800;opacity:0;transition:opacity .4s;text-shadow:0 0 30px rgba(255,207,107,.6)}
 #introTitle small{font-size:.4em;color:#ffcf6b}
@@ -108,6 +109,13 @@ canvas{display:block;cursor:crosshair}
 .card .line{display:flex;align-items:center;gap:8px;margin:9px 0;font-size:14px}
 .card .k{display:inline-block;background:rgba(255,255,255,.14);border-radius:6px;padding:2px 9px;font-weight:bold;color:#fff;font-size:12px;min-width:20px;text-align:center}
 .card ul{margin:0;padding-left:20px;line-height:2;font-size:14px}
+.card{max-height:82vh;overflow-y:auto}
+.card p{margin:8px 0;font-size:13.5px;line-height:1.5;color:#d8ccbf}
+.card b.step{display:block;margin:12px 0 4px;color:#ffcf6b;font-size:13px;letter-spacing:.05em}
+.card ol{margin:4px 0;padding-left:20px;line-height:1.7;font-size:13.5px}
+#sqbtns{flex-wrap:wrap}
+#btnMob{display:none}
+body.touch #btnMob{display:flex}
 .stick{position:fixed;top:0;left:0;width:60px;height:60px;z-index:3;display:none;pointer-events:none;touch-action:none}
 .stick .nub{position:absolute;left:50%;top:50%;width:60px;height:60px;margin:-30px 0 0 -30px;border-radius:50%;background:rgba(255,207,107,.75);border:2px solid rgba(255,255,255,.6);opacity:0;transition:opacity .12s}
 .stick.act .nub{opacity:1}
@@ -160,6 +168,7 @@ body.touch #chat{bottom:calc(150px + env(safe-area-inset-bottom))}</style>
   <div id="sqbtns">
     <button class="sqbtn" id="btnCmd"><span class="ic">🎮</span>Comandi</button>
     <button class="sqbtn" id="btnRul"><span class="ic">📜</span>Regole</button>
+    <button class="sqbtn" id="btnMob"><span class="ic">📱</span>Mobile</button>
   </div>
 </div>
 <div id="modal">
@@ -203,9 +212,11 @@ const cmdHTML = isTouch
   ? '<h3>Comandi</h3><div class="line"><span class="k">Sx</span> muoviti</div><div class="line"><span class="k">Dx</span> mira e spara</div><div class="line">Spingi forte a sinistra per lo scatto</div>'
   : '<h3>Comandi</h3><div class="line"><span class="k">W A S D</span> muoviti</div><div class="line"><span class="k">Mouse</span> mira</div><div class="line"><span class="k">Click</span> spara</div><div class="line"><span class="k">Shift</span> scatto</div><div class="line"><span class="k">T</span> chat</div>';
 const rulHTML='<h3>Regole</h3><ul><li>Griglia le altre salsicce sparando</li><li>Ogni colpo toglie 25 di vita</li><li>Grigliare qualcuno ti cura 25 di vita</li><li>Raccogli i pellet dorati per le munizioni</li><li>Vince chi ha piu grigliate a fine partita</li></ul>';
+const mobHTML='<h3>Esperienza Mobile</h3><p>Aggiungi WEINERVILLE alla schermata Home: giochi a schermo intero come una vera app, senza le barre del browser!</p><b class="step">📱 iPhone (Safari)</b><ol><li>Tocca il tasto <b>Condividi</b> (il quadrato con la freccia verso l\'alto, in basso)</li><li>Scorri e tocca <b>"Aggiungi alla schermata Home"</b></li><li>Tocca <b>"Aggiungi"</b> in alto a destra</li></ol><b class="step">🤖 Android (Chrome)</b><ol><li>Tocca i <b>tre puntini</b> in alto a destra</li><li>Tocca <b>"Aggiungi a schermata Home"</b> (o "Installa app")</li><li>Conferma con <b>"Aggiungi"</b></li></ol><p>Poi apri il gioco dall\'icona sulla Home e gira il telefono in <b>orizzontale</b>: buona grigliata! 🌭</p>';
 function openModal(html){ cardBody.innerHTML=html; modal.classList.add("show"); }
 document.getElementById("btnCmd").onclick=()=>openModal(cmdHTML);
 document.getElementById("btnRul").onclick=()=>openModal(rulHTML);
+document.getElementById("btnMob").onclick=()=>openModal(mobHTML);
 closeModal.onclick=()=>modal.classList.remove("show");
 modal.onclick=(e)=>{ if(e.target===modal) modal.classList.remove("show"); };
 let AC=null;
@@ -246,9 +257,9 @@ const sPick=()=>{ tn(880,"sine",.08,.09); tn(1320,"sine",.09,.06); };
     setTimeout(()=>{ presents.classList.add("show"); }, 400);
     setTimeout(()=>{ saus.classList.add("drop"); }, 3000);
     setTimeout(()=>{ logo.classList.add("squash"); presents.style.opacity="0"; stopAngelic(); meme(); tn(150,"triangle",.28,.16,2.4);
-      setTimeout(()=>{ title.classList.add("show2"); hint.classList.add("show2"); }, 300); }, 3620);
-    setTimeout(()=>{ intro.addEventListener("pointerdown",finish); }, 4400);
-    setTimeout(finish, 7000);
+      setTimeout(()=>{ title.classList.add("show2"); hint.classList.add("show2"); }, 650); }, 3950);
+    setTimeout(()=>{ intro.addEventListener("pointerdown",finish); }, 4700);
+    setTimeout(finish, 7600);
   }
   startScreen.addEventListener("pointerdown",runSequence);
 })();
@@ -260,7 +271,7 @@ function openPause(){ if(paused||!started)return; paused=true; for(const k in ke
 function resumeGame(){ paused=false; pauseEl.classList.remove("show"); }
 function exitToMenu(){ paused=false; started=false; pauseEl.classList.remove("show"); deadEl.style.display="none";
   try{ if(ws) ws.close(); }catch(e){}
-  me=null; players={}; disp={}; wasDead=false; respawnLock=0; killsEl.innerHTML=""; chatEl.innerHTML="";
+  me=null; players={}; disp={}; wasDead=false; respawnLock=0; vx=0; vy=0; killsEl.innerHTML=""; chatEl.innerHTML="";
   menu.classList.add("show"); if(!isTouch) nick.focus(); }
 document.getElementById("pauseResume").onclick=resumeGame;
 document.getElementById("pauseExit").onclick=exitToMenu;
@@ -270,6 +281,7 @@ const hud=document.getElementById("hud"), deadEl=document.getElementById("dead")
 function resize(){cv.width=innerWidth;cv.height=innerHeight;} resize(); onresize=resize; window.addEventListener("orientationchange",()=>setTimeout(resize,300));
 let me=null, players={}, bullets=[], disp={}, particles=[], popups=[], trail=[], shake=0;
 let x=1000, y=700, ang=0, mx=0, my=0, camx=x, camy=y;
+let vx=0, vy=0;
 let stamina=1, exhaust=0, prevAmmo=99;
 let wasDead=false, respawnLock=0;
 const keys={};
@@ -313,7 +325,7 @@ function onWsMessage(ev){ const d=JSON.parse(ev.data);
       const nowDead=(p.dead&&d.phase==="playing");
       deadEl.style.display = nowDead ? "flex" : "none";
       if(nowDead){ deadBy.textContent = p.killedBy ? ("sei stato grigliato da "+p.killedBy) : ""; }
-      if(wasDead && !p.dead){ x=p.x; y=p.y; camx=p.x; camy=p.y; respawnLock=0.35; }
+      if(wasDead && !p.dead){ x=p.x; y=p.y; camx=p.x; camy=p.y; vx=0; vy=0; respawnLock=0.35; }
       wasDead=p.dead;
       let amStr = isTouch ? (" · Munizioni: "+(p.ammo!=null?p.ammo:0)) : "";
       hud.textContent="Grigliate: "+(p.score||0)+amStr;
@@ -458,6 +470,9 @@ function frame(now){
       stamina=Math.min(1, stamina+dt*0.28);
     }
     if(ml>0){ let nx=x+dx/ml*spd*dt, ny=y+dy/ml*spd*dt; const c=collide(nx,ny); x=Math.max(20,Math.min(WORLD_W-20,c.x)); y=Math.max(20,Math.min(WORLD_H-20,c.y)); }
+    let tvx=0,tvy=0; if(ml>0){ tvx=dx/ml*spd; tvy=dy/ml*spd; }
+    const acc=1-Math.exp(-dt*18); vx+=(tvx-vx)*acc; vy+=(tvy-vy)*acc;
+    if(ml<=0 && (Math.abs(vx)>4||Math.abs(vy)>4)){ let nx=x+vx*dt, ny=y+vy*dt; const c=collide(nx,ny); x=Math.max(20,Math.min(WORLD_W-20,c.x)); y=Math.max(20,Math.min(WORLD_H-20,c.y)); }
     let targetAng=ang;
     if(isTouch){ if(aimVec.active) targetAng=Math.atan2(aimVec.y,aimVec.x); else if(ml>0) targetAng=Math.atan2(dy,dx); }
     else { targetAng=aimMouse(); }
@@ -465,7 +480,7 @@ function frame(now){
     if(sprinting && Math.random()<0.6){ trail.push({x:x,y:y,a:ang,life:1}); }
   } else { if(exhaust>0){ exhaust-=dt; if(exhaust<=0){exhaust=0; stamina=1;} } else { stamina=Math.min(1, stamina+dt*0.28); } }
   for(let i=trail.length-1;i>=0;i--){ trail[i].life-=dt*4.5; if(trail[i].life<=0) trail.splice(i,1); }
-  camx+=(x-camx)*Math.min(1,dt*10); camy+=(y-camy)*Math.min(1,dt*10);
+  const cs=1-Math.exp(-dt*10); camx+=(x-camx)*cs; camy+=(y-camy)*cs;
   ctx.fillStyle="#0b0d12"; ctx.fillRect(0,0,cv.width,cv.height);
   ctx.save();
   shake*=Math.pow(.0015,dt); if(shake<.2)shake=0;
@@ -476,7 +491,7 @@ function frame(now){
   for(const b of bullets){ const s=W2S(b.x,b.y);
     if(s.sx<-10||s.sy<-10||s.sx>cv.width+10||s.sy>cv.height+10) continue;
     ctx.shadowBlur=6; ctx.shadowColor="#ffd24d"; ctx.fillStyle="#ffe27a"; ctx.beginPath(); ctx.arc(s.sx,s.sy,4*ZOOM,0,7); ctx.fill(); ctx.shadowBlur=0; }
-  const sm=Math.min(1,dt*16);
+  const sm=1-Math.exp(-dt*11);
   for(const id in players){ const p=players[id];
     if(!disp[id]) disp[id]={x:p.x,y:p.y,a:p.a};
     disp[id].x+=(p.x-disp[id].x)*sm;
