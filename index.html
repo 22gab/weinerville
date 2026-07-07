@@ -20,7 +20,7 @@ canvas{display:block;cursor:crosshair}
 #hud{position:fixed;top:calc(12px + env(safe-area-inset-top));left:calc(12px + env(safe-area-inset-left));color:#ffcf6b;font-weight:bold;font-size:20px;text-shadow:0 0 8px #000;z-index:2}
 #timer{position:fixed;top:calc(12px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);color:#fff;font-weight:bold;font-size:26px;text-shadow:0 0 8px #000;z-index:2}
 #timer.warn{color:#ff6a5a}
-#bars{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;gap:7px;width:260px;max-width:70vw}
+#bars{position:fixed;left:50%;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;gap:7px;width:260px;max-width:70vw;bottom:16px}
 .bar{position:relative;height:16px;border-radius:9px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.12);overflow:hidden}
 .bar i{position:absolute;inset:0;transform-origin:left;transition:transform .12s}
 .bar span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;color:#fff;text-shadow:0 1px 2px #000;letter-spacing:.06em}
@@ -28,7 +28,7 @@ canvas{display:block;cursor:crosshair}
 #hpBar.low #hpFill{background:linear-gradient(90deg,#ff5a4d,#ff9a4d)}
 #amFill{background:linear-gradient(90deg,#e0a52e,#ffe27a)}
 #amBar.empty #amFill{background:linear-gradient(90deg,#7a3a3a,#ff6a5a)}
-#mini{position:fixed;bottom:calc(14px + env(safe-area-inset-bottom));right:calc(14px + env(safe-area-inset-right));border:1px solid rgba(255,255,255,.15);border-radius:8px;background:rgba(0,0,0,.4);z-index:2}
+#mini{position:fixed;bottom:14px;right:14px;border:1px solid rgba(255,255,255,.15);border-radius:8px;background:rgba(0,0,0,.4);z-index:2}
 #dead{position:fixed;inset:0;display:none;align-items:center;justify-content:center;color:#ff6a5a;font-size:40px;font-weight:bold;background:rgba(0,0,0,.4);z-index:2}
 #over{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(8,6,10,.9);z-index:5;color:#fff}
 #over.show{display:flex}
@@ -54,7 +54,7 @@ canvas{display:block;cursor:crosshair}
 #introHint{position:absolute;bottom:8%;color:#8a7a68;font-size:14px;letter-spacing:.2em;text-transform:uppercase;opacity:0;transition:opacity .5s}
 .show2{opacity:1 !important}
 #intro.gone{opacity:0;pointer-events:none}
-#menu{position:fixed;inset:0;background:radial-gradient(ellipse at center,#141018,#0b0d12);z-index:9;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);box-sizing:border-box}
+#menu{position:fixed;inset:0;background:radial-gradient(ellipse at center,#141018,#0b0d12);z-index:9;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;box-sizing:border-box}
 #menu.show{display:flex}
 #squishy{width:150px;height:82px;cursor:pointer;filter:drop-shadow(0 8px 20px rgba(255,140,60,.35))}
 #squishy .sbody{transform-origin:50% 60%;transition:transform .09s ease-out}
@@ -79,9 +79,7 @@ canvas{display:block;cursor:crosshair}
 .stick{position:fixed;top:0;left:0;width:60px;height:60px;z-index:3;display:none;pointer-events:none;touch-action:none}
 .stick .nub{position:absolute;left:50%;top:50%;width:60px;height:60px;margin:-30px 0 0 -30px;border-radius:50%;background:rgba(255,207,107,.75);border:2px solid rgba(255,255,255,.6);opacity:0;transition:opacity .12s}
 .stick.act .nub{opacity:1}
-body.touch .stick{display:block}
-body.touch #mini{bottom:calc(150px + env(safe-area-inset-bottom))}
-body.touch #bars{bottom:calc(150px + env(safe-area-inset-bottom))}</style>
+body.touch .stick{display:block}</style>
 </head><body>
 <div id="intro">
   <div id="introTitle">WEINERVILLE <small>il giochino</small></div>
@@ -145,6 +143,9 @@ const WORLD_W=2500, WORLD_H=1600, MAX_AMMO=30;
 const ZOOM=0.87;
 const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints>0;
 if(isTouch) document.body.classList.add("touch");
+const barsEl=document.getElementById("bars");
+function placeBars(){ const b=16+(isTouch?150:0); barsEl.style.bottom=b+"px"; }
+placeBars();
 let buildings=[], pellets=[];
 let myName="DOG", started=false;
 const squishy=document.getElementById("squishy");
@@ -203,7 +204,7 @@ playBtn.onclick=()=>{ myName=(nick.value||"").replace(/[<>&"']/g,"").trim().slic
 nick.onkeydown=e=>{ if(e.key==="Enter") playBtn.click(); e.stopPropagation(); };
 const cv=document.getElementById("c"), ctx=cv.getContext("2d");
 const hud=document.getElementById("hud"), deadEl=document.getElementById("dead");
-function resize(){cv.width=innerWidth;cv.height=innerHeight;} resize(); onresize=resize; window.addEventListener("orientationchange",()=>setTimeout(resize,300));
+function resize(){cv.width=innerWidth;cv.height=innerHeight; placeBars();} resize(); onresize=resize; window.addEventListener("orientationchange",()=>setTimeout(resize,300));
 let me=null, players={}, bullets=[], disp={}, particles=[], popups=[], trail=[], shake=0;
 let x=1000, y=700, ang=0, mx=0, my=0, camx=x, camy=y;
 let stamina=1, exhaust=0, prevAmmo=99;
@@ -351,9 +352,9 @@ function frame(now){
     let wantSprint=false;
     if(isTouch){ wantSprint=(moveVec.mag||0)>0.9; } else { wantSprint=(keys["shift"]||keys["shiftleft"]||keys["shiftright"]); }
     let spd=260;
-    if(exhaust>0){ exhaust-=dt; if(exhaust<0)exhaust=0; }
-    else if(wantSprint && ml>0 && stamina>0.02){ spd=260*1.8; stamina-=dt*0.5; sprinting=true; if(stamina<=0){ stamina=0; exhaust=3; } }
-    else { if(exhaust<=0) stamina=Math.min(1, stamina+dt*0.28); }
+    if(exhaust>0){ exhaust-=dt; if(exhaust<0){exhaust=0;} }
+    else if(wantSprint && ml>0 && stamina>0.02){ spd=260*1.8; stamina-=dt*0.5; sprinting=true; if(stamina<=0){ stamina=0; exhaust=3; sprinting=false; spd=260; } }
+    else { stamina=Math.min(1, stamina+dt*0.28); }
     if(ml>0){ let nx=x+dx/ml*spd*dt, ny=y+dy/ml*spd*dt; const c=collide(nx,ny); x=Math.max(20,Math.min(WORLD_W-20,c.x)); y=Math.max(20,Math.min(WORLD_H-20,c.y)); }
     let targetAng=ang;
     if(isTouch){ if(aimVec.active) targetAng=Math.atan2(aimVec.y,aimVec.x); else if(ml>0) targetAng=Math.atan2(dy,dx); }
