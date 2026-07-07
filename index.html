@@ -154,7 +154,7 @@ function doSquish(){ squishy.classList.add("squish"); if(window.__sq_snd) window
 squishy.addEventListener("pointerdown",doSquish);
 const cmdHTML = isTouch
   ? '<h3>Comandi</h3><div class="line"><span class="k">Sx</span> muoviti</div><div class="line"><span class="k">Dx</span> mira e spara</div><div class="line">Spingi forte a sinistra per lo scatto</div>'
-  : '<h3>Comandi</h3><div class="line"><span class="k">W A S D</span> muoviti</div><div class="line"><span class="k">Mouse</span> mira verso il puntatore</div><div class="line"><span class="k">Click</span> spara</div><div class="line"><span class="k">Shift</span> scatto (sprint)</div>';
+  : '<h3>Comandi</h3><div class="line"><span class="k">W A S D</span> muoviti</div><div class="line"><span class="k">Mouse</span> mira verso il puntatore</div><div class="line"><span class="k">Click</span> spara</div><div class="line"><span class="k">Spazio</span> scatto (sprint)</div>';
 const rulHTML='<h3>Regole</h3><ul><li>Griglia le altre salsicce sparando</li><li>Ogni colpo toglie 25 di vita</li><li>Grigliare qualcuno ti cura 25 di vita</li><li>Raccogli i pellet dorati per le munizioni</li><li>Vince chi ha piu grigliate a fine partita</li></ul>';
 function openModal(html){ cardBody.innerHTML=html; modal.classList.add("show"); }
 document.getElementById("btnCmd").onclick=()=>openModal(cmdHTML);
@@ -244,8 +244,8 @@ window.onmousemove=e=>{ mx=e.clientX; my=e.clientY; };
 function aimMouse(){ return Math.atan2((my-cv.height/2)/ZOOM, (mx-cv.width/2)/ZOOM); }
 function shoot(){ if(started&&ws.readyState===1&&me&&players[me]&&!players[me].dead&&players[me].ammo>0){ ws.send(JSON.stringify({type:"shoot",x:x,y:y,a:ang})); sShoot(); shake=Math.max(shake,1.5); } }
 if(!isTouch){ window.onmousedown=()=>{ if(started) shoot(); }; }
-window.onkeydown=e=>{ keys[e.key.toLowerCase()]=true; };
-window.onkeyup=e=>{ keys[e.key.toLowerCase()]=false; };
+window.onkeydown=e=>{ keys[e.key.toLowerCase()]=true; if(e.code==="Space"){ keys["space"]=true; e.preventDefault(); } };
+window.onkeyup=e=>{ keys[e.key.toLowerCase()]=false; if(e.code==="Space"){ keys["space"]=false; } };
 const stickL=document.getElementById("stickL"), nubL=document.getElementById("nubL");
 const stickR=document.getElementById("stickR"), nubR=document.getElementById("nubR");
 function bindZone(side, onMove, onEnd){
@@ -350,7 +350,7 @@ function frame(now){
     else { if(keys["arrowup"]||keys["w"])dy-=1; if(keys["arrowdown"]||keys["s"])dy+=1; if(keys["arrowleft"]||keys["a"])dx-=1; if(keys["arrowright"]||keys["d"])dx+=1; }
     const ml=Math.hypot(dx,dy);
     let wantSprint=false;
-    if(isTouch){ wantSprint=(moveVec.mag||0)>0.9; } else { wantSprint=(keys["shift"]||keys["shiftleft"]||keys["shiftright"]); }
+    if(isTouch){ wantSprint=(moveVec.mag||0)>0.9; } else { wantSprint=keys["space"]; }
     let spd=260;
     if(exhaust>0){
       exhaust-=dt;
