@@ -17,8 +17,8 @@
 <meta name="twitter:image" content="https://weinerville.onrender.com/logo.png">
 <style>html,body{margin:0;background:#0b0d12;overflow:hidden;font-family:sans-serif;touch-action:none;-webkit-user-select:none;user-select:none;width:100%;height:100%;position:fixed;inset:0}
 canvas{display:block;cursor:crosshair}
-#hud{position:fixed;top:calc(12px + env(safe-area-inset-top));left:calc(12px + env(safe-area-inset-left));color:#ffcf6b;font-weight:bold;font-size:20px;text-shadow:0 0 8px #000;z-index:2}
-#timer{position:fixed;top:calc(12px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);color:#fff;font-weight:bold;font-size:26px;text-shadow:0 0 8px #000;z-index:2}
+#hud{position:fixed;top:calc(10px + env(safe-area-inset-top));left:calc(10px + env(safe-area-inset-left));color:#ffcf6b;font-weight:bold;font-size:18px;text-shadow:0 0 8px #000;z-index:2}
+#timer{position:fixed;top:calc(10px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);color:#fff;font-weight:bold;font-size:24px;text-shadow:0 0 8px #000;z-index:2}
 #timer.warn{color:#ff6a5a}
 #bars{position:fixed;left:50%;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;gap:7px;width:260px;max-width:70vw;bottom:16px}
 .bar{position:relative;height:16px;border-radius:9px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.12);overflow:hidden}
@@ -29,16 +29,19 @@ canvas{display:block;cursor:crosshair}
 #amFill{background:linear-gradient(90deg,#e0a52e,#ffe27a)}
 #amBar.empty #amFill{background:linear-gradient(90deg,#7a3a3a,#ff6a5a)}
 #mini{position:fixed;bottom:14px;left:14px;border:1px solid rgba(255,255,255,.15);border-radius:8px;background:rgba(0,0,0,.4);z-index:2}
-#kills{position:fixed;bottom:14px;right:14px;z-index:2;display:flex;flex-direction:column;align-items:flex-end;gap:4px;pointer-events:none;max-width:60vw}
-#kills .kl{background:rgba(0,0,0,.5);border:1px solid rgba(255,140,60,.3);border-radius:8px;padding:4px 10px;color:#ffd9a8;font-size:12px;font-weight:bold;text-shadow:0 1px 2px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+#kills{position:fixed;bottom:14px;right:14px;z-index:2;display:flex;flex-direction:column;align-items:flex-end;gap:4px;pointer-events:none;max-width:52vw}
+#kills .kl{background:rgba(0,0,0,.5);border:1px solid rgba(255,140,60,.3);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:bold;text-shadow:0 1px 2px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+#kills .kl .ka{color:#ffcf6b}
+#kills .kl .kv{color:#ff6a5a}
+#kills .kl .kt{color:#c9b8a8;font-weight:normal}
 #chat{position:fixed;bottom:calc(120px + env(safe-area-inset-bottom));left:14px;z-index:4;display:flex;flex-direction:column;gap:3px;max-width:min(360px,60vw);pointer-events:none}
 #chat .cm{background:rgba(0,0,0,.5);border-radius:8px;padding:3px 9px;color:#dfe6ee;font-size:13px;text-shadow:0 1px 2px #000;width:fit-content;max-width:100%;word-break:break-word}
 #chat .cm b{color:#ffcf6b}
 #chatInput{position:fixed;bottom:calc(80px + env(safe-area-inset-bottom));left:14px;z-index:6;display:none;width:min(360px,70vw);padding:10px 12px;border-radius:10px;border:1px solid #ffcf6b;background:rgba(10,8,14,.95);color:#fff;font-size:15px;outline:none}
 #chatInput.show{display:block}
 #dead{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;color:#ff6a5a;font-weight:bold;background:rgba(0,0,0,.4);z-index:2;text-align:center;padding:0 20px}
-#dead .big{font-size:40px}
-#dead .by{font-size:17px;color:#ffd9a8;margin-top:8px;font-weight:normal}
+#dead .big{font-size:38px}
+#dead .by{font-size:16px;color:#ffd9a8;margin-top:8px;font-weight:normal}
 #over{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(8,6,10,.9);z-index:5;color:#fff}
 #over.show{display:flex}
 #over h2{color:#ffcf6b;letter-spacing:.2em;text-transform:uppercase;font-size:16px;margin:0 0 4px}
@@ -90,8 +93,12 @@ canvas{display:block;cursor:crosshair}
 .stick.act .nub{opacity:1}
 body.touch .stick{display:block}
 body.touch #bars{display:none}
-body.touch #mini{bottom:calc(14px + env(safe-area-inset-bottom));left:calc(14px + env(safe-area-inset-left))}
-body.touch #kills{bottom:auto;top:calc(46px + env(safe-area-inset-top));right:calc(14px + env(safe-area-inset-right))}</style>
+body.touch #hud{font-size:15px}
+body.touch #timer{font-size:20px}
+body.touch #mini{width:104px;height:70px;bottom:calc(12px + env(safe-area-inset-bottom));left:calc(12px + env(safe-area-inset-left))}
+body.touch #kills{max-width:44vw;gap:3px;bottom:auto;top:calc(40px + env(safe-area-inset-top));right:calc(10px + env(safe-area-inset-right))}
+body.touch #kills .kl{font-size:9.5px;padding:2px 6px;border-radius:6px}
+body.touch #chat{bottom:calc(150px + env(safe-area-inset-bottom))}</style>
 </head><body>
 <div id="intro">
   <div id="introTitle">WEINERVILLE <small>il giochino</small></div>
@@ -229,9 +236,12 @@ let seenKills={}, seenChats={}, chatOpen=false, firstState=true;
 const ws=new WebSocket((location.protocol==="https:"?"wss://":"ws://")+location.host);
 ws.onopen=()=>{ if(started) ws.send(JSON.stringify({type:"name",name:myName})); };
 function fmt(s){ const m=Math.floor(s/60), ss=s%60; return m+":"+(ss<10?"0":"")+ss; }
+function esc(s){ return (""+s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 function burst(px,py,n,hue,white){ for(let i=0;i<n;i++){ const a=Math.random()*7, sp=Math.random()*260+40;
   particles.push({x:px,y:py,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,dec:Math.random()*1.2+1,r:Math.random()*3+1.5,hue,white:white&&Math.random()<.4}); } }
-function addKillLine(txt){ const el=document.createElement("div"); el.className="kl"; el.textContent="🌭 "+txt; killsEl.appendChild(el); while(killsEl.children.length>4) killsEl.removeChild(killsEl.firstChild); setTimeout(()=>{ if(el.parentNode) el.parentNode.removeChild(el); }, 7000); }
+function addKillLine(k,mid,v){ const el=document.createElement("div"); el.className="kl";
+  el.innerHTML='<span class="ka">'+esc(k)+'</span> <span class="kt">'+esc(mid)+'</span> <span class="kv">'+esc(v)+'</span>';
+  killsEl.appendChild(el); while(killsEl.children.length>4) killsEl.removeChild(killsEl.firstChild); setTimeout(()=>{ if(el.parentNode) el.parentNode.removeChild(el); }, 7000); }
 function addChatLine(name,txt){ const el=document.createElement("div"); el.className="cm"; const b=document.createElement("b"); b.textContent=name+": "; el.appendChild(b); el.appendChild(document.createTextNode(txt)); chatEl.appendChild(el); while(chatEl.children.length>6) chatEl.removeChild(chatEl.firstChild); setTimeout(()=>{ if(el.parentNode) el.parentNode.removeChild(el); }, 6000); }
 ws.onmessage=(ev)=>{ const d=JSON.parse(ev.data);
   if(d.type==="welcome"){ me=d.id; if(d.buildings) buildings=d.buildings; }
@@ -242,13 +252,13 @@ ws.onmessage=(ev)=>{ const d=JSON.parse(ev.data);
       prevHp[id]=p.hp; prevAlive[id]=!p.dead;
     }
     players=np;
-    if(d.killfeed){ for(const k of d.killfeed){ if(!seenKills[k.id]){ seenKills[k.id]=1; if(!firstState) addKillLine(k.txt); } } }
+    if(d.killfeed){ for(const k of d.killfeed){ if(!seenKills[k.id]){ seenKills[k.id]=1; if(!firstState){ const m=(""+k.txt).match(/^(.*?) (ha grigliato|è finito sulla brace di|ha servito|si è bruciacchiato contro|ha fatto una salsiccia di|è stato messo alla griglia da|ha distrutto|umiliato da|ha mandato a casa|passato alla piastra da) (.*)$/); if(m){ addKillLine(m[1],m[2],m[3]); } else { addKillLine("", k.txt, ""); } } } } }
     if(d.chat){ for(const c of d.chat){ if(!seenChats[c.id]){ seenChats[c.id]=1; if(!firstState) addChatLine(c.name,c.txt); } } }
     firstState=false;
     if(d.timer!=null){ timerEl.textContent=fmt(d.timer); timerEl.classList.toggle("warn",d.timer<=15); }
     if(d.phase==="over"){ overEl.classList.add("show");
       if(d.rank&&d.rank.length){ winnerEl.textContent="🏆 "+d.rank[0].name;
-        rankEl.innerHTML=d.rank.map((r,i)=>'<div class="row"><span class="pos">'+(i+1)+'</span><span class="nm">'+r.name+'</span><span class="sc">'+r.score+'</span></div>').join(""); }
+        rankEl.innerHTML=d.rank.map((r,i)=>'<div class="row"><span class="pos">'+(i+1)+'</span><span class="nm">'+esc(r.name)+'</span><span class="sc">'+r.score+'</span></div>').join(""); }
       nextEl.textContent="Nuova partita a breve...";
     } else overEl.classList.remove("show");
     if(me&&players[me]){ const p=players[me];
@@ -363,8 +373,9 @@ function drawPellets(t){
     ctx.shadowBlur=0; ctx.fillStyle="rgba(255,255,255,0.7)"; ctx.beginPath(); ctx.arc(s.sx-1.5,s.sy-1.5,1.8,0,7); ctx.fill(); }
 }
 function drawMini(){
-  mctx.clearRect(0,0,150,100); mctx.fillStyle="rgba(0,0,0,0.3)"; mctx.fillRect(0,0,150,100);
-  const sx=150/WORLD_W, sy=100/WORLD_H;
+  const W=mini.width, H=mini.height;
+  mctx.clearRect(0,0,W,H); mctx.fillStyle="rgba(0,0,0,0.3)"; mctx.fillRect(0,0,W,H);
+  const sx=W/WORLD_W, sy=H/WORLD_H;
   mctx.fillStyle="rgba(120,150,190,0.5)";
   for(const b of buildings){ mctx.fillRect(b.x*sx,b.y*sy,b.w*sx,b.h*sy); }
   mctx.fillStyle="#ffe27a";
