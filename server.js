@@ -17,10 +17,26 @@ let players = {};
 let bullets = [];
 let pellets = [];
 let killfeed = [];
+let chat = [];
 let nextId = 1;
 let bulletId = 1;
 let pelletId = 1;
+let killId = 1;
+let chatId = 1;
 const BOT_NAMES = ["giovane sugo","er profeta","lil carne","Lil Grill","Young Sizzle","Fat Frank","Trap Dawg"];
+const KILL_LINES = [
+  "{k} ha grigliato {v}",
+  "{v} è finito sulla brace di {k}",
+  "{k} ha servito {v} ben cotto",
+  "{v} si è bruciacchiato contro {k}",
+  "{k} ha fatto una salsiccia di {v}",
+  "{v} è stato messo alla griglia da {k}",
+  "{k} ha distrutto {v}",
+  "{v} umiliato da {k}",
+  "{k} ha mandato a casa {v}",
+  "{v} passato alla piastra da {k}"
+];
+function killLine(k,v){ const t=KILL_LINES[Math.floor(Math.random()*KILL_LINES.length)]; return t.replace("{k}",k).replace("{v}",v); }
 const MATCH_TIME = 120;
 let matchTimer = MATCH_TIME;
 let phase = "playing";
@@ -37,7 +53,7 @@ for(let i=0;i<MAX_PELLETS;i++) spawnPellet();
 const BOTS = 4;
 for (let i=0;i<BOTS;i++){ const id="bot"+(i+1); const p={ x:0,y:0,a:0,hp:100,dead:false,score:0,ammo:MAX_AMMO,name:BOT_NAMES[i%BOT_NAMES.length],bot:true,tx:0,ty:0,shootCd:0,wanderCd:0 }; spawn(p); players[id]=p; }
 function newMatch(){ matchTimer=MATCH_TIME; phase="playing"; for(const id in players){ players[id].score=0; spawn(players[id]); } bullets=[]; pellets=[]; killfeed=[]; for(let i=0;i<MAX_PELLETS;i++) spawnPellet(); }
-function addKill(killer, victim){ killfeed.push({ k:killer, v:victim, t:Date.now() }); if(killfeed.length>5) killfeed.shift(); }
+function addKill(killer, victim){ killfeed.push({ id:killId++, txt:killLine(killer,victim) }); if(killfeed.length>4) killfeed.shift(); }
 wss.on("connection", (ws) => {
   const id = "p" + (nextId++);
   const p = { x:0, y:0, a:0, hp:100, dead:false, score:0, ammo:MAX_AMMO, name:"DOG", killedBy:"" };
@@ -50,6 +66,7 @@ wss.on("connection", (ws) => {
       const me = players[id];
       if (!me) return;
       if (data.type === "name") { me.name = (""+data.name).slice(0,12); }
+      if (data.type === "chat") { const txt=(""+data.txt).slice(0,80).replace(/[<>]/g,""); if(txt.trim()){ chat.push({ id:chatId++, name:me.name, txt }); if(chat.length>8) chat.shift(); } return; }
       if (me.dead || phase!=="playing") return;
       if (data.type === "move") { me.x=data.x; me.y=data.y; me.a=data.a; resolve(me); }
       if (data.type === "shoot") { if(me.ammo>0){ me.ammo--; fire(id, data.x, data.y, data.a); } }
@@ -110,7 +127,7 @@ setInterval(() => {
     }
     if (matchTimer<=0){ phase="over"; overTimer=6; lastRank = Object.values(players).map(p=>({name:p.name,score:p.score})).sort((a,b)=>b.score-a.score).slice(0,8); }
   } else { overTimer -= dt; if (overTimer<=0) newMatch(); }
-  const snapshot = JSON.stringify({ type:"state", players, bullets, pellets, timer:Math.max(0,Math.ceil(matchTimer)), phase, rank:lastRank, killfeed });
+  const snapshot = JSON.stringify({ type:"state", players, bullets, pellets, timer:Math.max(0,Math.ceil(matchTimer)), phase, rank:lastRank, killfeed, chat });
   wss.clients.forEach(c => { if (c.readyState === 1) c.send(snapshot); });
 }, 1000/30);
 const PORT = process.env.PORT || 2567;
