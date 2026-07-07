@@ -20,7 +20,7 @@ canvas{display:block;cursor:crosshair}
 #hud{position:fixed;top:calc(12px + env(safe-area-inset-top));left:calc(12px + env(safe-area-inset-left));color:#ffcf6b;font-weight:bold;font-size:20px;text-shadow:0 0 8px #000;z-index:2}
 #timer{position:fixed;top:calc(12px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);color:#fff;font-weight:bold;font-size:26px;text-shadow:0 0 8px #000;z-index:2}
 #timer.warn{color:#ff6a5a}
-#bars{position:fixed;left:50%;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;gap:7px;width:260px;max-width:70vw;top:0}
+#bars{position:fixed;left:50%;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;gap:7px;width:260px;max-width:70vw;bottom:16px}
 .bar{position:relative;height:16px;border-radius:9px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.12);overflow:hidden}
 .bar i{position:absolute;inset:0;transform-origin:left;transition:transform .12s}
 .bar span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;color:#fff;text-shadow:0 1px 2px #000;letter-spacing:.06em}
@@ -28,8 +28,17 @@ canvas{display:block;cursor:crosshair}
 #hpBar.low #hpFill{background:linear-gradient(90deg,#ff5a4d,#ff9a4d)}
 #amFill{background:linear-gradient(90deg,#e0a52e,#ffe27a)}
 #amBar.empty #amFill{background:linear-gradient(90deg,#7a3a3a,#ff6a5a)}
-#mini{position:fixed;top:0;right:14px;border:1px solid rgba(255,255,255,.15);border-radius:8px;background:rgba(0,0,0,.4);z-index:2}
-#dead{position:fixed;inset:0;display:none;align-items:center;justify-content:center;color:#ff6a5a;font-size:40px;font-weight:bold;background:rgba(0,0,0,.4);z-index:2}
+#mini{position:fixed;bottom:14px;left:14px;border:1px solid rgba(255,255,255,.15);border-radius:8px;background:rgba(0,0,0,.4);z-index:2}
+#kills{position:fixed;bottom:14px;right:14px;z-index:2;display:flex;flex-direction:column;align-items:flex-end;gap:4px;pointer-events:none;max-width:60vw}
+#kills .kl{background:rgba(0,0,0,.5);border:1px solid rgba(255,140,60,.3);border-radius:8px;padding:4px 10px;color:#ffd9a8;font-size:12px;font-weight:bold;text-shadow:0 1px 2px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+#chat{position:fixed;bottom:calc(120px + env(safe-area-inset-bottom));left:14px;z-index:4;display:flex;flex-direction:column;gap:3px;max-width:min(360px,60vw);pointer-events:none}
+#chat .cm{background:rgba(0,0,0,.5);border-radius:8px;padding:3px 9px;color:#dfe6ee;font-size:13px;text-shadow:0 1px 2px #000;width:fit-content;max-width:100%;word-break:break-word}
+#chat .cm b{color:#ffcf6b}
+#chatInput{position:fixed;bottom:calc(80px + env(safe-area-inset-bottom));left:14px;z-index:6;display:none;width:min(360px,70vw);padding:10px 12px;border-radius:10px;border:1px solid #ffcf6b;background:rgba(10,8,14,.95);color:#fff;font-size:15px;outline:none}
+#chatInput.show{display:block}
+#dead{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;color:#ff6a5a;font-weight:bold;background:rgba(0,0,0,.4);z-index:2;text-align:center;padding:0 20px}
+#dead .big{font-size:40px}
+#dead .by{font-size:17px;color:#ffd9a8;margin-top:8px;font-weight:normal}
 #over{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(8,6,10,.9);z-index:5;color:#fff}
 #over.show{display:flex}
 #over h2{color:#ffcf6b;letter-spacing:.2em;text-transform:uppercase;font-size:16px;margin:0 0 4px}
@@ -79,7 +88,10 @@ canvas{display:block;cursor:crosshair}
 .stick{position:fixed;top:0;left:0;width:60px;height:60px;z-index:3;display:none;pointer-events:none;touch-action:none}
 .stick .nub{position:absolute;left:50%;top:50%;width:60px;height:60px;margin:-30px 0 0 -30px;border-radius:50%;background:rgba(255,207,107,.75);border:2px solid rgba(255,255,255,.6);opacity:0;transition:opacity .12s}
 .stick.act .nub{opacity:1}
-body.touch .stick{display:block}</style>
+body.touch .stick{display:block}
+body.touch #bars{display:none}
+body.touch #mini{bottom:calc(14px + env(safe-area-inset-bottom));left:calc(14px + env(safe-area-inset-left))}
+body.touch #kills{bottom:auto;top:calc(46px + env(safe-area-inset-top));right:calc(14px + env(safe-area-inset-right))}</style>
 </head><body>
 <div id="intro">
   <div id="introTitle">WEINERVILLE <small>il giochino</small></div>
@@ -128,9 +140,12 @@ body.touch .stick{display:block}</style>
   <div class="bar" id="amBar"><i id="amFill"></i><span id="amTxt">30</span></div>
 </div>
 <canvas id="mini" width="150" height="100"></canvas>
+<div id="kills"></div>
+<div id="chat"></div>
+<input id="chatInput" maxlength="80" placeholder="scrivi e premi Invio..." autocomplete="off">
 <div class="stick" id="stickL"><div class="nub" id="nubL"></div></div>
 <div class="stick" id="stickR"><div class="nub" id="nubR"></div></div>
-<div id="dead">GRIGLIATO</div>
+<div id="dead"><div class="big">GRIGLIATO!</div><div class="by" id="deadBy"></div></div>
 <div id="over"><h2>Fine partita</h2><div class="win" id="winner">-</div><div id="rank"></div><div class="next" id="next">Nuova partita...</div></div>
 <script>
 const menu=document.getElementById("menu"), nick=document.getElementById("nick"), playBtn=document.getElementById("play");
@@ -139,25 +154,11 @@ const hpBar=document.getElementById("hpBar"), hpFill=document.getElementById("hp
 const amBar=document.getElementById("amBar"), amFill=document.getElementById("amFill"), amTxt=document.getElementById("amTxt");
 const mini=document.getElementById("mini"), mctx=mini.getContext("2d");
 const modal=document.getElementById("modal"), cardBody=document.getElementById("cardBody"), closeModal=document.getElementById("closeModal");
+const killsEl=document.getElementById("kills"), chatEl=document.getElementById("chat"), chatInput=document.getElementById("chatInput"), deadBy=document.getElementById("deadBy");
 const WORLD_W=2500, WORLD_H=1600, MAX_AMMO=30;
 const ZOOM=0.87;
 const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints>0;
 if(isTouch) document.body.classList.add("touch");
-const barsEl=document.getElementById("bars"), miniEl=document.getElementById("mini");
-function vh(){ return (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight; }
-function placeUI(){
-  const h=vh();
-  const barsH=barsEl.offsetHeight||45;
-  const stickPad=isTouch?150:16;
-  barsEl.style.top=(h - barsH - stickPad)+"px";
-  const miniH=miniEl.offsetHeight||100;
-  miniEl.style.top=(h - miniH - stickPad)+"px";
-}
-placeUI();
-window.addEventListener("resize",placeUI);
-if(window.visualViewport){ window.visualViewport.addEventListener("resize",placeUI); window.visualViewport.addEventListener("scroll",placeUI); }
-window.addEventListener("orientationchange",()=>{ setTimeout(placeUI,300); setTimeout(placeUI,700); });
-setInterval(placeUI,1000);
 let buildings=[], pellets=[];
 let myName="DOG", started=false;
 const squishy=document.getElementById("squishy");
@@ -166,7 +167,7 @@ function doSquish(){ squishy.classList.add("squish"); if(window.__sq_snd) window
 squishy.addEventListener("pointerdown",doSquish);
 const cmdHTML = isTouch
   ? '<h3>Comandi</h3><div class="line"><span class="k">Sx</span> muoviti</div><div class="line"><span class="k">Dx</span> mira e spara</div><div class="line">Spingi forte a sinistra per lo scatto</div>'
-  : '<h3>Comandi</h3><div class="line"><span class="k">W A S D</span> muoviti</div><div class="line"><span class="k">Mouse</span> mira verso il puntatore</div><div class="line"><span class="k">Click</span> spara</div><div class="line"><span class="k">Shift</span> scatto (sprint)</div>';
+  : '<h3>Comandi</h3><div class="line"><span class="k">W A S D</span> muoviti</div><div class="line"><span class="k">Mouse</span> mira</div><div class="line"><span class="k">Click</span> spara</div><div class="line"><span class="k">Shift</span> scatto</div><div class="line"><span class="k">T</span> chat</div>';
 const rulHTML='<h3>Regole</h3><ul><li>Griglia le altre salsicce sparando</li><li>Ogni colpo toglie 25 di vita</li><li>Grigliare qualcuno ti cura 25 di vita</li><li>Raccogli i pellet dorati per le munizioni</li><li>Vince chi ha piu grigliate a fine partita</li></ul>';
 function openModal(html){ cardBody.innerHTML=html; modal.classList.add("show"); }
 document.getElementById("btnCmd").onclick=()=>openModal(cmdHTML);
@@ -216,18 +217,22 @@ playBtn.onclick=()=>{ myName=(nick.value||"").replace(/[<>&"']/g,"").trim().slic
 nick.onkeydown=e=>{ if(e.key==="Enter") playBtn.click(); e.stopPropagation(); };
 const cv=document.getElementById("c"), ctx=cv.getContext("2d");
 const hud=document.getElementById("hud"), deadEl=document.getElementById("dead");
-function resize(){cv.width=innerWidth;cv.height=innerHeight; placeUI();} resize(); onresize=resize;
+function resize(){cv.width=innerWidth;cv.height=innerHeight;} resize(); onresize=resize; window.addEventListener("orientationchange",()=>setTimeout(resize,300));
 let me=null, players={}, bullets=[], disp={}, particles=[], popups=[], trail=[], shake=0;
 let x=1000, y=700, ang=0, mx=0, my=0, camx=x, camy=y;
 let stamina=1, exhaust=0, prevAmmo=99;
+let wasDead=false, respawnLock=0;
 const keys={};
 let prevHp={}, prevAlive={};
 let moveVec={x:0,y:0,mag:0}, aimVec={x:0,y:0,active:false};
+let seenKills={}, seenChats={}, chatOpen=false, firstState=true;
 const ws=new WebSocket((location.protocol==="https:"?"wss://":"ws://")+location.host);
 ws.onopen=()=>{ if(started) ws.send(JSON.stringify({type:"name",name:myName})); };
 function fmt(s){ const m=Math.floor(s/60), ss=s%60; return m+":"+(ss<10?"0":"")+ss; }
 function burst(px,py,n,hue,white){ for(let i=0;i<n;i++){ const a=Math.random()*7, sp=Math.random()*260+40;
   particles.push({x:px,y:py,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,dec:Math.random()*1.2+1,r:Math.random()*3+1.5,hue,white:white&&Math.random()<.4}); } }
+function addKillLine(txt){ const el=document.createElement("div"); el.className="kl"; el.textContent="🌭 "+txt; killsEl.appendChild(el); while(killsEl.children.length>4) killsEl.removeChild(killsEl.firstChild); setTimeout(()=>{ if(el.parentNode) el.parentNode.removeChild(el); }, 7000); }
+function addChatLine(name,txt){ const el=document.createElement("div"); el.className="cm"; const b=document.createElement("b"); b.textContent=name+": "; el.appendChild(b); el.appendChild(document.createTextNode(txt)); chatEl.appendChild(el); while(chatEl.children.length>6) chatEl.removeChild(chatEl.firstChild); setTimeout(()=>{ if(el.parentNode) el.parentNode.removeChild(el); }, 6000); }
 ws.onmessage=(ev)=>{ const d=JSON.parse(ev.data);
   if(d.type==="welcome"){ me=d.id; if(d.buildings) buildings=d.buildings; }
   if(d.type==="state"){ const np=d.players; bullets=d.bullets||[]; pellets=d.pellets||[];
@@ -237,6 +242,9 @@ ws.onmessage=(ev)=>{ const d=JSON.parse(ev.data);
       prevHp[id]=p.hp; prevAlive[id]=!p.dead;
     }
     players=np;
+    if(d.killfeed){ for(const k of d.killfeed){ if(!seenKills[k.id]){ seenKills[k.id]=1; if(!firstState) addKillLine(k.txt); } } }
+    if(d.chat){ for(const c of d.chat){ if(!seenChats[c.id]){ seenChats[c.id]=1; if(!firstState) addChatLine(c.name,c.txt); } } }
+    firstState=false;
     if(d.timer!=null){ timerEl.textContent=fmt(d.timer); timerEl.classList.toggle("warn",d.timer<=15); }
     if(d.phase==="over"){ overEl.classList.add("show");
       if(d.rank&&d.rank.length){ winnerEl.textContent="🏆 "+d.rank[0].name;
@@ -244,19 +252,33 @@ ws.onmessage=(ev)=>{ const d=JSON.parse(ev.data);
       nextEl.textContent="Nuova partita a breve...";
     } else overEl.classList.remove("show");
     if(me&&players[me]){ const p=players[me];
-      deadEl.style.display = (p.dead&&d.phase==="playing") ? "flex" : "none";
-      hud.textContent="Grigliate: "+(p.score||0);
+      const nowDead=(p.dead&&d.phase==="playing");
+      deadEl.style.display = nowDead ? "flex" : "none";
+      if(nowDead){ deadBy.textContent = p.killedBy ? ("· sei stato grigliato da "+p.killedBy) : ""; }
+      if(wasDead && !p.dead){ x=p.x; y=p.y; camx=p.x; camy=p.y; respawnLock=0.35; }
+      wasDead=p.dead;
+      let amStr = isTouch ? (" · Munizioni: "+(p.ammo!=null?p.ammo:0)) : "";
+      hud.textContent="Grigliate: "+(p.score||0)+amStr;
       const hp=Math.max(0,p.hp); hpFill.style.transform="scaleX("+(hp/100)+")"; hpTxt.textContent=hp; hpBar.classList.toggle("low",hp<=40);
       const am=p.ammo!=null?p.ammo:0; amFill.style.transform="scaleX("+(am/MAX_AMMO)+")"; amTxt.textContent=am; amBar.classList.toggle("empty",am<=0);
       if(am>prevAmmo){ sPick(); popups.push({x:x,y:y-30,vy:-40,life:1,txt:"+"+(am-prevAmmo)}); } prevAmmo=am;
-      if(!p.dead && (Math.abs(p.x-x)>200||Math.abs(p.y-y)>200)){ x=p.x; y=p.y; }
+      if(!p.dead && respawnLock<=0 && (Math.abs(p.x-x)>200||Math.abs(p.y-y)>200)){ x=p.x; y=p.y; }
     } } };
 function dist(p){ return Math.hypot(p.x-x,p.y-y); }
 window.onmousemove=e=>{ mx=e.clientX; my=e.clientY; };
 function aimMouse(){ return Math.atan2((my-cv.height/2)/ZOOM, (mx-cv.width/2)/ZOOM); }
 function shoot(){ if(started&&ws.readyState===1&&me&&players[me]&&!players[me].dead&&players[me].ammo>0){ ws.send(JSON.stringify({type:"shoot",x:x,y:y,a:ang})); sShoot(); shake=Math.max(shake,1.5); } }
-if(!isTouch){ window.onmousedown=()=>{ if(started) shoot(); }; }
-window.onkeydown=e=>{ keys[e.key.toLowerCase()]=true; };
+if(!isTouch){ window.onmousedown=()=>{ if(started&&!chatOpen) shoot(); }; }
+function openChat(){ if(isTouch)return; chatOpen=true; chatInput.classList.add("show"); chatInput.value=""; chatInput.focus(); }
+function closeChat(){ chatOpen=false; chatInput.classList.remove("show"); chatInput.blur(); }
+chatInput.addEventListener("keydown",e=>{ e.stopPropagation();
+  if(e.key==="Enter"){ const t=chatInput.value.trim(); if(t&&ws.readyState===1) ws.send(JSON.stringify({type:"chat",txt:t})); closeChat(); }
+  else if(e.key==="Escape"){ closeChat(); } });
+window.onkeydown=e=>{
+  if(chatOpen) return;
+  if((e.key==="t"||e.key==="T") && started && !isTouch){ e.preventDefault(); openChat(); return; }
+  keys[e.key.toLowerCase()]=true;
+};
 window.onkeyup=e=>{ keys[e.key.toLowerCase()]=false; };
 const stickL=document.getElementById("stickL"), nubL=document.getElementById("nubL");
 const stickR=document.getElementById("stickR"), nubR=document.getElementById("nubR");
@@ -354,9 +376,10 @@ function drawMini(){
 let last=performance.now();
 function frame(now){
   let dt=(now-last)/1000; if(dt>0.05)dt=0.05; last=now;
+  if(respawnLock>0) respawnLock-=dt;
   const dead = me&&players[me]&&players[me].dead;
   let sprinting=false;
-  if(started && !dead){
+  if(started && !dead && !chatOpen && respawnLock<=0){
     let dx=0,dy=0;
     if(isTouch){ dx=moveVec.x; dy=moveVec.y; }
     else { if(keys["arrowup"]||keys["w"])dy-=1; if(keys["arrowdown"]||keys["s"])dy+=1; if(keys["arrowleft"]||keys["a"])dx-=1; if(keys["arrowright"]||keys["d"])dx+=1; }
