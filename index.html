@@ -352,16 +352,22 @@ function frame(now){
     let wantSprint=false;
     if(isTouch){ wantSprint=(moveVec.mag||0)>0.9; } else { wantSprint=(keys["shift"]||keys["shiftleft"]||keys["shiftright"]); }
     let spd=260;
-    if(exhaust>0){ exhaust-=dt; if(exhaust<0){exhaust=0;} }
-    else if(wantSprint && ml>0 && stamina>0.02){ spd=260*1.8; stamina-=dt*0.5; sprinting=true; if(stamina<=0){ stamina=0; exhaust=3; sprinting=false; spd=260; } }
-    else { stamina=Math.min(1, stamina+dt*0.28); }
+    if(exhaust>0){
+      exhaust-=dt;
+      if(exhaust<=0){ exhaust=0; stamina=1; } else { stamina=0; }
+    } else if(wantSprint && ml>0 && stamina>0.02){
+      spd=260*1.8; stamina-=dt*0.5; sprinting=true;
+      if(stamina<=0){ stamina=0; exhaust=3; sprinting=false; spd=260; }
+    } else {
+      stamina=Math.min(1, stamina+dt*0.28);
+    }
     if(ml>0){ let nx=x+dx/ml*spd*dt, ny=y+dy/ml*spd*dt; const c=collide(nx,ny); x=Math.max(20,Math.min(WORLD_W-20,c.x)); y=Math.max(20,Math.min(WORLD_H-20,c.y)); }
     let targetAng=ang;
     if(isTouch){ if(aimVec.active) targetAng=Math.atan2(aimVec.y,aimVec.x); else if(ml>0) targetAng=Math.atan2(dy,dx); }
     else { targetAng=aimMouse(); }
     ang=lerpA(ang,targetAng,Math.min(1,dt*20));
     if(sprinting && Math.random()<0.6){ trail.push({x:x,y:y,a:ang,life:1}); }
-  } else { if(exhaust>0){ exhaust-=dt; if(exhaust<0)exhaust=0; } else { stamina=Math.min(1, stamina+dt*0.28); } }
+  } else { if(exhaust>0){ exhaust-=dt; if(exhaust<=0){exhaust=0; stamina=1;} } else { stamina=Math.min(1, stamina+dt*0.28); } }
   for(let i=trail.length-1;i>=0;i--){ trail[i].life-=dt*4.5; if(trail[i].life<=0) trail.splice(i,1); }
   camx+=(x-camx)*Math.min(1,dt*10); camy+=(y-camy)*Math.min(1,dt*10);
   ctx.fillStyle="#0b0d12"; ctx.fillRect(0,0,cv.width,cv.height);
@@ -384,7 +390,7 @@ function frame(now){
   for(const id in disp){ const p=players[id]; if(!p||p.dead) continue; const d=disp[id];
     const s=W2S(d.x,d.y);
     if(s.sx<-60||s.sy<-60||s.sx>cv.width+60||s.sy>cv.height+60) continue;
-    if(id===me){ sprintRing(s.sx,s.sy, exhaust>0?(1-exhaust/3):stamina, exhaust>0); }
+    if(id===me){ sprintRing(s.sx,s.sy, exhaust>0?(exhaust/3):stamina, exhaust>0); }
     sausage(s.sx, s.sy, d.a, 20*ZOOM, id===me?40:hueOf(id), id===me, p.hp, p.name); }
   for(let i=particles.length-1;i>=0;i--){ const pt=particles[i]; pt.x+=pt.vx*dt; pt.y+=pt.vy*dt; pt.vx*=.92; pt.vy*=.92; pt.life-=pt.dec*dt;
     if(pt.life<=0){ particles.splice(i,1); continue; }
