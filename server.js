@@ -19,7 +19,7 @@ let pellets = [];
 let nextId = 1;
 let bulletId = 1;
 let pelletId = 1;
-const BOT_NAMES = ["Frankie","Sizzle","Linky","Duke","Wurst","BratBob","Chorizo"];
+const BOT_NAMES = ["giovane sugo","er profeta","lil carne","Lil Grill","Young Sizzle","Fat Frank","Trap Dawg"];
 const MATCH_TIME = 120;
 let matchTimer = MATCH_TIME;
 let phase = "playing";
@@ -63,22 +63,22 @@ function updateBots(dt){
     if (!b.bot || b.dead) continue;
     let target=null, td=1e9;
     for (const oid in players){ const o=players[oid]; if (oid===id||o.dead) continue; const d=Math.hypot(o.x-b.x,o.y-b.y); if (d<td){ td=d; target=o; } }
-    if (target && td<820 && b.ammo>0){
+    if (target && td<950 && b.ammo>0){
       const desired = Math.atan2(target.y-b.y, target.x-b.x);
       b.a = desired;
-      const spd = 215*dt;
+      const spd = 235*dt;
       if (td>230){ b.x += Math.cos(b.a)*spd; b.y += Math.sin(b.a)*spd; }
       else if (td<150){ b.x -= Math.cos(b.a)*spd; b.y -= Math.sin(b.a)*spd; }
-      else { b.x += Math.cos(b.a+1.57)*spd*0.6; b.y += Math.sin(b.a+1.57)*spd*0.6; }
+      else { b.x += Math.cos(b.a+1.57)*spd*0.7; b.y += Math.sin(b.a+1.57)*spd*0.7; }
       b.shootCd -= dt;
-      if (b.shootCd<=0){ b.ammo--; fire(id, b.x, b.y, b.a + (Math.random()-0.5)*0.10); b.shootCd = 0.32 + Math.random()*0.28; }
+      if (b.shootCd<=0){ b.ammo--; fire(id, b.x, b.y, b.a + (Math.random()-0.5)*0.07); b.shootCd = 0.26 + Math.random()*0.20; }
     } else {
       let pt=null, pd=1e9;
       for(const pe of pellets){ const d=Math.hypot(pe.x-b.x,pe.y-b.y); if(d<pd){pd=d;pt=pe;} }
       if(b.ammo<12 && pt){ b.tx=pt.x; b.ty=pt.y; }
       else { b.wanderCd -= dt; if (b.wanderCd<=0){ const s=freeSpot(); b.tx=s.x; b.ty=s.y; b.wanderCd=2+Math.random()*2; } }
       const dx=b.tx-b.x, dy=b.ty-b.y, dd=Math.hypot(dx,dy)||1;
-      b.a = Math.atan2(dy,dx); b.x += dx/dd*150*dt; b.y += dy/dd*150*dt;
+      b.a = Math.atan2(dy,dx); b.x += dx/dd*160*dt; b.y += dy/dd*160*dt;
     }
     resolve(b); pickPellets(b);
   }
