@@ -355,7 +355,7 @@ function frame(now){
     if(exhaust>0){
       exhaust-=dt;
       if(exhaust<=0){ exhaust=0; stamina=1; } else { stamina=0; }
-    } else if(wantSprint && ml>0 && stamina>0.02){
+    } else if(wantSprint && ml>0 && stamina>0){
       spd=260*1.8; stamina-=dt*0.5; sprinting=true;
       if(stamina<=0){ stamina=0; exhaust=3; sprinting=false; spd=260; }
     } else {
