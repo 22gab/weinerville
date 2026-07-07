@@ -20,7 +20,7 @@ canvas{display:block;cursor:crosshair}
 #hud{position:fixed;top:calc(12px + env(safe-area-inset-top));left:calc(12px + env(safe-area-inset-left));color:#ffcf6b;font-weight:bold;font-size:20px;text-shadow:0 0 8px #000;z-index:2}
 #timer{position:fixed;top:calc(12px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);color:#fff;font-weight:bold;font-size:26px;text-shadow:0 0 8px #000;z-index:2}
 #timer.warn{color:#ff6a5a}
-#bars{position:fixed;left:50%;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;gap:7px;width:260px;max-width:70vw;bottom:16px}
+#bars{position:fixed;left:50%;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;gap:7px;width:260px;max-width:70vw;top:0}
 .bar{position:relative;height:16px;border-radius:9px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.12);overflow:hidden}
 .bar i{position:absolute;inset:0;transform-origin:left;transition:transform .12s}
 .bar span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;color:#fff;text-shadow:0 1px 2px #000;letter-spacing:.06em}
@@ -28,7 +28,7 @@ canvas{display:block;cursor:crosshair}
 #hpBar.low #hpFill{background:linear-gradient(90deg,#ff5a4d,#ff9a4d)}
 #amFill{background:linear-gradient(90deg,#e0a52e,#ffe27a)}
 #amBar.empty #amFill{background:linear-gradient(90deg,#7a3a3a,#ff6a5a)}
-#mini{position:fixed;bottom:14px;right:14px;border:1px solid rgba(255,255,255,.15);border-radius:8px;background:rgba(0,0,0,.4);z-index:2}
+#mini{position:fixed;top:0;right:14px;border:1px solid rgba(255,255,255,.15);border-radius:8px;background:rgba(0,0,0,.4);z-index:2}
 #dead{position:fixed;inset:0;display:none;align-items:center;justify-content:center;color:#ff6a5a;font-size:40px;font-weight:bold;background:rgba(0,0,0,.4);z-index:2}
 #over{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(8,6,10,.9);z-index:5;color:#fff}
 #over.show{display:flex}
@@ -143,9 +143,21 @@ const WORLD_W=2500, WORLD_H=1600, MAX_AMMO=30;
 const ZOOM=0.87;
 const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints>0;
 if(isTouch) document.body.classList.add("touch");
-const barsEl=document.getElementById("bars");
-function placeBars(){ const b=16+(isTouch?150:0); barsEl.style.bottom=b+"px"; }
-placeBars();
+const barsEl=document.getElementById("bars"), miniEl=document.getElementById("mini");
+function vh(){ return (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight; }
+function placeUI(){
+  const h=vh();
+  const barsH=barsEl.offsetHeight||45;
+  const stickPad=isTouch?150:16;
+  barsEl.style.top=(h - barsH - stickPad)+"px";
+  const miniH=miniEl.offsetHeight||100;
+  miniEl.style.top=(h - miniH - stickPad)+"px";
+}
+placeUI();
+window.addEventListener("resize",placeUI);
+if(window.visualViewport){ window.visualViewport.addEventListener("resize",placeUI); window.visualViewport.addEventListener("scroll",placeUI); }
+window.addEventListener("orientationchange",()=>{ setTimeout(placeUI,300); setTimeout(placeUI,700); });
+setInterval(placeUI,1000);
 let buildings=[], pellets=[];
 let myName="DOG", started=false;
 const squishy=document.getElementById("squishy");
@@ -204,7 +216,7 @@ playBtn.onclick=()=>{ myName=(nick.value||"").replace(/[<>&"']/g,"").trim().slic
 nick.onkeydown=e=>{ if(e.key==="Enter") playBtn.click(); e.stopPropagation(); };
 const cv=document.getElementById("c"), ctx=cv.getContext("2d");
 const hud=document.getElementById("hud"), deadEl=document.getElementById("dead");
-function resize(){cv.width=innerWidth;cv.height=innerHeight; placeBars();} resize(); onresize=resize; window.addEventListener("orientationchange",()=>setTimeout(resize,300));
+function resize(){cv.width=innerWidth;cv.height=innerHeight; placeUI();} resize(); onresize=resize;
 let me=null, players={}, bullets=[], disp={}, particles=[], popups=[], trail=[], shake=0;
 let x=1000, y=700, ang=0, mx=0, my=0, camx=x, camy=y;
 let stamina=1, exhaust=0, prevAmmo=99;
