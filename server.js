@@ -28,17 +28,17 @@ let lastRank = [];
 const TICK = 1/30;
 function inBuilding(x,y,m){ m=m||0; for(const b of buildings){ if(x>b.x-m&&x<b.x+b.w+m&&y>b.y-m&&y<b.y+b.h+m) return true; } return false; }
 function freeSpot(){ for(let i=0;i<100;i++){ const x=100+Math.random()*(WORLD_W-200), y=100+Math.random()*(WORLD_H-200); if(!inBuilding(x,y,40)) return {x,y}; } return {x:WORLD_W/2,y:WORLD_H/2}; }
-function spawn(p){ const s=freeSpot(); p.x=s.x; p.y=s.y; p.hp=100; p.dead=false; p.ammo=MAX_AMMO; p.spawnSeq=(p.spawnSeq||0)+1; }
+function spawn(p){ const s=freeSpot(); p.x=s.x; p.y=s.y; p.hp=100; p.dead=false; p.ammo=MAX_AMMO; }
 function resolve(p){ for(const b of buildings){ const nx=Math.max(b.x,Math.min(p.x,b.x+b.w)), ny=Math.max(b.y,Math.min(p.y,b.y+b.h)); const dx=p.x-nx, dy=p.y-ny, d2=dx*dx+dy*dy; if(d2<RAD*RAD){ const d=Math.sqrt(d2)||0.01; p.x+=dx/d*(RAD-d); p.y+=dy/d*(RAD-d); } } p.x=Math.max(RAD,Math.min(WORLD_W-RAD,p.x)); p.y=Math.max(RAD,Math.min(WORLD_H-RAD,p.y)); }
 function fire(owner, ox, oy, ang){ bullets.push({ id: bulletId++, owner, x: ox, y: oy, vx: Math.cos(ang)*600, vy: Math.sin(ang)*600, life: 1.2 }); }
 function spawnPellet(){ const s=freeSpot(); pellets.push({ id:pelletId++, x:s.x, y:s.y, amt:6 }); }
 for(let i=0;i<MAX_PELLETS;i++) spawnPellet();
 const BOTS = 4;
-for (let i=0;i<BOTS;i++){ const id="bot"+(i+1); const p={ x:0,y:0,a:0,hp:100,dead:false,score:0,ammo:MAX_AMMO,name:BOT_NAMES[i%BOT_NAMES.length],bot:true,tx:0,ty:0,shootCd:0,wanderCd:0,spawnSeq:0 }; spawn(p); players[id]=p; }
+for (let i=0;i<BOTS;i++){ const id="bot"+(i+1); const p={ x:0,y:0,a:0,hp:100,dead:false,score:0,ammo:MAX_AMMO,name:BOT_NAMES[i%BOT_NAMES.length],bot:true,tx:0,ty:0,shootCd:0,wanderCd:0 }; spawn(p); players[id]=p; }
 function newMatch(){ matchTimer=MATCH_TIME; phase="playing"; for(const id in players){ players[id].score=0; spawn(players[id]); } bullets=[]; pellets=[]; for(let i=0;i<MAX_PELLETS;i++) spawnPellet(); }
 wss.on("connection", (ws) => {
   const id = "p" + (nextId++);
-  const p = { x:0, y:0, a:0, hp:100, dead:false, score:0, ammo:MAX_AMMO, name:"DOG", spawnSeq:0, killedBy:"" };
+  const p = { x:0, y:0, a:0, hp:100, dead:false, score:0, ammo:MAX_AMMO, name:"DOG", killedBy:"" };
   spawn(p);
   players[id] = p;
   ws.send(JSON.stringify({ type: "welcome", id, buildings }));
@@ -49,9 +49,7 @@ wss.on("connection", (ws) => {
       if (!me) return;
       if (data.type === "name") { me.name = (""+data.name).slice(0,12); }
       if (me.dead || phase!=="playing") return;
-      if (data.type === "move") {
-        if (data.seq===me.spawnSeq){ me.x=data.x; me.y=data.y; me.a=data.a; resolve(me); }
-      }
+      if (data.type === "move") { me.x=data.x; me.y=data.y; me.a=data.a; resolve(me); }
       if (data.type === "shoot") { if(me.ammo>0){ me.ammo--; fire(id, data.x, data.y, data.a); } }
     } catch (e) {}
   });
