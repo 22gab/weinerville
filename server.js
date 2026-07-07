@@ -16,6 +16,7 @@ const buildings=[
 let players = {};
 let bullets = [];
 let pellets = [];
+let killfeed = [];
 let nextId = 1;
 let bulletId = 1;
 let pelletId = 1;
@@ -35,7 +36,8 @@ function spawnPellet(){ const s=freeSpot(); pellets.push({ id:pelletId++, x:s.x,
 for(let i=0;i<MAX_PELLETS;i++) spawnPellet();
 const BOTS = 4;
 for (let i=0;i<BOTS;i++){ const id="bot"+(i+1); const p={ x:0,y:0,a:0,hp:100,dead:false,score:0,ammo:MAX_AMMO,name:BOT_NAMES[i%BOT_NAMES.length],bot:true,tx:0,ty:0,shootCd:0,wanderCd:0 }; spawn(p); players[id]=p; }
-function newMatch(){ matchTimer=MATCH_TIME; phase="playing"; for(const id in players){ players[id].score=0; spawn(players[id]); } bullets=[]; pellets=[]; for(let i=0;i<MAX_PELLETS;i++) spawnPellet(); }
+function newMatch(){ matchTimer=MATCH_TIME; phase="playing"; for(const id in players){ players[id].score=0; spawn(players[id]); } bullets=[]; pellets=[]; killfeed=[]; for(let i=0;i<MAX_PELLETS;i++) spawnPellet(); }
+function addKill(killer, victim){ killfeed.push({ k:killer, v:victim, t:Date.now() }); if(killfeed.length>5) killfeed.shift(); }
 wss.on("connection", (ws) => {
   const id = "p" + (nextId++);
   const p = { x:0, y:0, a:0, hp:100, dead:false, score:0, ammo:MAX_AMMO, name:"DOG", killedBy:"" };
@@ -100,7 +102,7 @@ setInterval(() => {
         if (p.dead || id === bl.owner) continue;
         if (Math.hypot(bl.x - p.x, bl.y - p.y) < 24) {
           p.hp -= 25; gone = true;
-          if (p.hp <= 0) { p.dead = true; const k=players[bl.owner]; if(k){ k.score++; k.hp=Math.min(100,k.hp+25); p.killedBy=k.name; } setTimeout(()=>{ if(players[id]&&phase==="playing") spawn(players[id]); }, 2000); }
+          if (p.hp <= 0) { p.dead = true; const k=players[bl.owner]; if(k){ k.score++; k.hp=Math.min(100,k.hp+25); p.killedBy=k.name; addKill(k.name, p.name); } setTimeout(()=>{ if(players[id]&&phase==="playing") spawn(players[id]); }, 2000); }
           break;
         }
       }
@@ -108,7 +110,7 @@ setInterval(() => {
     }
     if (matchTimer<=0){ phase="over"; overTimer=6; lastRank = Object.values(players).map(p=>({name:p.name,score:p.score})).sort((a,b)=>b.score-a.score).slice(0,8); }
   } else { overTimer -= dt; if (overTimer<=0) newMatch(); }
-  const snapshot = JSON.stringify({ type:"state", players, bullets, pellets, timer:Math.max(0,Math.ceil(matchTimer)), phase, rank:lastRank });
+  const snapshot = JSON.stringify({ type:"state", players, bullets, pellets, timer:Math.max(0,Math.ceil(matchTimer)), phase, rank:lastRank, killfeed });
   wss.clients.forEach(c => { if (c.readyState === 1) c.send(snapshot); });
 }, 1000/30);
 const PORT = process.env.PORT || 2567;
