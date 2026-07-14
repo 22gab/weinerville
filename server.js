@@ -24,6 +24,7 @@ let pelletId = 1;
 let killId = 1;
 let chatId = 1;
 const BOT_NAMES = ["giovane sugo","er profeta","lil carne","Lil Grill","Young Sizzle","Fat Frank","Trap Dawg"];
+const BOT_COLORS = [210,0,275,150];
 const KILL_LINES = [
   "{k} ha grigliato {v}",
   "{v} è finito sulla brace di {k}",
@@ -37,26 +38,40 @@ const KILL_LINES = [
   "{v} passato alla piastra da {k}"
 ];
 function killLine(k,v){ const t=KILL_LINES[Math.floor(Math.random()*KILL_LINES.length)]; return t.replace("{k}",k).replace("{v}",v); }
+function hashHue(id){ let h=0; for(const c of id) h=(h*31+c.charCodeAt(0))%360; return h; }
 const MATCH_TIME = 120;
 let matchTimer = MATCH_TIME;
 let phase = "playing";
 let overTimer = 0;
 let lastRank = [];
 const TICK = 1/30;
+const INVINCIBLE_TIME = 2;
+const ALLOWED_EXPR = ["happy","angry","surprised","wink","tongue","cool"];
+const ALLOWED_SKIN = ["default"];
 function inBuilding(x,y,m){ m=m||0; for(const b of buildings){ if(x>b.x-m&&x<b.x+b.w+m&&y>b.y-m&&y<b.y+b.h+m) return true; } return false; }
 function freeSpot(){ for(let i=0;i<100;i++){ const x=100+Math.random()*(WORLD_W-200), y=100+Math.random()*(WORLD_H-200); if(!inBuilding(x,y,40)) return {x,y}; } return {x:WORLD_W/2,y:WORLD_H/2}; }
-function spawn(p){ const s=freeSpot(); p.x=s.x; p.y=s.y; p.hp=100; p.dead=false; p.ammo=MAX_AMMO; }
+function safeSpot(){
+  let best=null, bestScore=-Infinity;
+  for(let i=0;i<10;i++){
+    const s = freeSpot();
+    let score = 0;
+    for(const id in players){ const o=players[id]; if(o.dead) continue; score += Math.hypot(o.x-s.x, o.y-s.y); }
+    if(score>bestScore){ bestScore=score; best=s; }
+  }
+  return best || freeSpot();
+}
+function spawn(p){ const s=safeSpot(); p.x=s.x; p.y=s.y; p.hp=100; p.dead=false; p.ammo=MAX_AMMO; p.invincible=INVINCIBLE_TIME; }
 function resolve(p){ for(const b of buildings){ const nx=Math.max(b.x,Math.min(p.x,b.x+b.w)), ny=Math.max(b.y,Math.min(p.y,b.y+b.h)); const dx=p.x-nx, dy=p.y-ny, d2=dx*dx+dy*dy; if(d2<RAD*RAD){ const d=Math.sqrt(d2)||0.01; p.x+=dx/d*(RAD-d); p.y+=dy/d*(RAD-d); } } p.x=Math.max(RAD,Math.min(WORLD_W-RAD,p.x)); p.y=Math.max(RAD,Math.min(WORLD_H-RAD,p.y)); }
 function fire(owner, ox, oy, ang){ bullets.push({ id: bulletId++, owner, x: ox, y: oy, vx: Math.cos(ang)*600, vy: Math.sin(ang)*600, life: 1.2 }); }
 function spawnPellet(){ const s=freeSpot(); pellets.push({ id:pelletId++, x:s.x, y:s.y, amt:6 }); }
 for(let i=0;i<MAX_PELLETS;i++) spawnPellet();
 const BOTS = 4;
-for (let i=0;i<BOTS;i++){ const id="bot"+(i+1); const p={ x:0,y:0,a:0,hp:100,dead:false,score:0,ammo:MAX_AMMO,name:BOT_NAMES[i%BOT_NAMES.length],bot:true,tx:0,ty:0,shootCd:0,wanderCd:0 }; spawn(p); players[id]=p; }
+for (let i=0;i<BOTS;i++){ const id="bot"+(i+1); const p={ x:0,y:0,a:0,hp:100,dead:false,score:0,ammo:MAX_AMMO,name:BOT_NAMES[i%BOT_NAMES.length],bot:true,tx:0,ty:0,shootCd:0,wanderCd:0,color:BOT_COLORS[i%BOT_COLORS.length],expr:"cool",skin:"default",invincible:0 }; spawn(p); players[id]=p; }
 function newMatch(){ matchTimer=MATCH_TIME; phase="playing"; for(const id in players){ players[id].score=0; spawn(players[id]); } bullets=[]; pellets=[]; killfeed=[]; for(let i=0;i<MAX_PELLETS;i++) spawnPellet(); }
 function addKill(killer, victim){ killfeed.push({ id:killId++, txt:killLine(killer,victim) }); if(killfeed.length>4) killfeed.shift(); }
 wss.on("connection", (ws) => {
   const id = "p" + (nextId++);
-  const p = { x:0, y:0, a:0, hp:100, dead:false, score:0, ammo:MAX_AMMO, name:"DOG", killedBy:"" };
+  const p = { x:0, y:0, a:0, hp:100, dead:false, score:0, ammo:MAX_AMMO, name:"DOG", killedBy:"", color:hashHue(id), expr:"happy", skin:"default", invincible:0 };
   spawn(p);
   players[id] = p;
   ws.send(JSON.stringify({ type: "welcome", id, buildings }));
@@ -67,6 +82,12 @@ wss.on("connection", (ws) => {
       if (!me) return;
       if (data.type === "name") { me.name = (""+data.name).slice(0,12); }
       if (data.type === "chat") { const txt=(""+data.txt).slice(0,80).replace(/[<>]/g,""); if(txt.trim()){ chat.push({ id:chatId++, name:me.name, txt }); if(chat.length>8) chat.shift(); } return; }
+      if (data.type === "customize") {
+        if (typeof data.color === "number" && isFinite(data.color)) me.color = ((Math.floor(data.color)%360)+360)%360;
+        if (ALLOWED_EXPR.includes(data.expr)) me.expr = data.expr;
+        if (ALLOWED_SKIN.includes(data.skin)) me.skin = data.skin;
+        return;
+      }
       if (me.dead || phase!=="playing") return;
       if (data.type === "move") { me.x=data.x; me.y=data.y; me.a=data.a; resolve(me); }
       if (data.type === "shoot") { if(me.ammo>0){ me.ammo--; fire(id, data.x, data.y, data.a); } }
@@ -107,7 +128,7 @@ setInterval(() => {
   if (phase==="playing"){
     matchTimer -= dt;
     updateBots(dt);
-    for (const id in players){ const p=players[id]; if(!p.dead && !p.bot) pickPellets(p); }
+    for (const id in players){ const p=players[id]; if(p.invincible>0) p.invincible=Math.max(0,p.invincible-dt); if(!p.dead && !p.bot) pickPellets(p); }
     if (pellets.length<MAX_PELLETS && Math.random()<0.22) spawnPellet();
     for (let i = bullets.length - 1; i >= 0; i--) {
       const bl = bullets[i];
@@ -117,6 +138,7 @@ setInterval(() => {
       for (const id in players) {
         const p = players[id];
         if (p.dead || id === bl.owner) continue;
+        if (p.invincible>0) continue;
         if (Math.hypot(bl.x - p.x, bl.y - p.y) < 24) {
           p.hp -= 25; gone = true;
           if (p.hp <= 0) { p.dead = true; const k=players[bl.owner]; if(k){ k.score++; k.hp=Math.min(100,k.hp+25); p.killedBy=k.name; addKill(k.name, p.name); } setTimeout(()=>{ if(players[id]&&phase==="playing") spawn(players[id]); }, 2000); }
