@@ -320,13 +320,20 @@ function drawBrace(c,cx,cy,t){
     c.fillStyle=fg; c.beginPath(); c.moveTo(fx-5,base); c.quadraticCurveTo(fx,base-fh,fx+5,base); c.closePath(); c.fill(); }
   c.restore();
 }
-function drawHand(c,x,y,ang){
-  c.save(); c.translate(x,y); c.rotate(ang);
-  c.fillStyle="#f0b98a"; c.beginPath(); c.ellipse(0,0,9,7,0,0,7); c.fill();
-  c.fillStyle="#e0a074";
-  for(let i=-1;i<=2;i++){ c.beginPath(); c.roundRect(-3+i*3.5,-9,3,7,1.5); c.fill(); }
-  c.beginPath(); c.roundRect(-9,-1,6,3,1.5); c.fill();
-  c.fillStyle="#c98a5c"; c.beginPath(); c.roundRect(-2,4,10,4,2); c.fill();
+function drawHand(c,gx,gy,edgeX,spin){
+  const tilt=Math.sin(spin)*0.18;
+  c.save();
+  c.strokeStyle="#e7ad7e"; c.lineWidth=15; c.lineCap="round";
+  c.beginPath(); c.moveTo(edgeX+6,gy+3); c.lineTo(gx+2,gy+2); c.stroke();
+  c.strokeStyle="#c98a5c"; c.lineWidth=15; c.lineCap="round";
+  c.beginPath(); c.moveTo(edgeX+18,gy+9); c.lineTo(edgeX+2,gy+7); c.stroke();
+  c.lineCap="butt";
+  c.save(); c.translate(gx,gy); c.rotate(tilt);
+  c.fillStyle="#f0b98a"; c.beginPath(); c.ellipse(0,0,11,9,0,0,7); c.fill();
+  c.fillStyle="#e7ad7e";
+  for(let i=-1;i<=2;i++){ c.beginPath(); c.roundRect(-7+i*4.6,-11,4,8,2); c.fill(); }
+  c.fillStyle="#e0a074"; c.beginPath(); c.roundRect(-11,-2,7,5,2.5); c.fill();
+  c.restore();
   c.restore();
 }
 function wardDrawSausage(cx,cy,size,hue,expr,spin,sqX,sqY){
@@ -355,23 +362,19 @@ function wardFrame(){
   c.clearRect(0,0,W,H);
   const cx=W/2, cy=H/2-2;
   drawBrace(c,cx,cy,wardT);
-  const spin=wardT*1.7;
+  const spin=wardT*3.4;
   const bob=Math.sin(wardT*2)*3, sy=cy+bob;
-  const size=27, bw=size*3.05, hw=bw/2;
-  const rodL=hw+40, rodR=hw+52;
-  c.strokeStyle="#9aa0a8"; c.lineWidth=5; c.lineCap="round";
-  c.beginPath(); c.moveTo(cx-rodL,sy); c.lineTo(cx+rodR,sy); c.stroke();
-  c.strokeStyle="#c8ccd2"; c.lineWidth=2; c.beginPath(); c.moveTo(cx-rodL,sy-1); c.lineTo(cx+rodR,sy-1); c.stroke();
+  const size=25, bw=size*3.05, hw=bw/2;
+  const rodLeft=cx-hw-24, rodRight=cx+hw+36;
+  c.strokeStyle="#9aa0a8"; c.lineWidth=4; c.lineCap="round";
+  c.beginPath(); c.moveTo(rodLeft,sy); c.lineTo(rodRight,sy); c.stroke();
+  c.strokeStyle="#d6dae0"; c.lineWidth=1.6; c.beginPath(); c.moveTo(rodLeft,sy-1.4); c.lineTo(rodRight,sy-1.4); c.stroke();
   c.lineCap="butt";
-  c.strokeStyle="#7a808a"; c.lineWidth=4;
-  c.beginPath(); c.moveTo(cx-hw-30,sy+30); c.lineTo(cx-hw-30,sy-2); c.stroke();
-  c.beginPath(); c.moveTo(cx+hw+34,sy+30); c.lineTo(cx+hw+34,sy-2); c.stroke();
+  c.fillStyle="#c8ccd2"; c.beginPath(); c.moveTo(rodLeft-7,sy); c.lineTo(rodLeft,sy-3); c.lineTo(rodLeft,sy+3); c.closePath(); c.fill();
   const breath=Math.sin(wardT*2.4)*0.04;
   wardDrawSausage(cx,sy,size,myColor,myExpr,spin,1+breath-wardReact*0.14,1-breath+wardReact*0.12);
-  const crankR=12, hx=cx+rodR, hy=sy;
-  const ex=hx+Math.cos(spin)*crankR, ey=hy+Math.sin(spin)*crankR;
-  c.strokeStyle="#7a808a"; c.lineWidth=4; c.beginPath(); c.moveTo(hx,hy); c.lineTo(ex,ey); c.stroke();
-  drawHand(c,ex,ey,spin+Math.PI/2);
+  const ox=Math.cos(spin)*3, oy=Math.sin(spin)*3;
+  drawHand(c,rodRight+ox,sy+oy,W,spin);
   wardRAF=requestAnimationFrame(wardFrame);
 }
 function renderWardrobe(){ cardBody.innerHTML=buildWardrobeHTML(); wardCv2=document.getElementById("wardCv"); wctx=wardCv2?wardCv2.getContext("2d"):null; }
@@ -709,7 +712,7 @@ function frame(now){
     const hueP = p.color!=null ? p.color : (id===me?40:hueOf(id));
     const inv = p.invincible>0;
     if(inv) ctx.globalAlpha = 0.4+0.35*Math.sin(now/70);
-    sausage(s.sx, s.sy, d.a, 22*ZOOM, hueP, id===me, p.hp, p.name, id===me?recoil:0, p.expr||"happy");
+    sausage(s.sx, s.sy, d.a, 19*ZOOM, hueP, id===me, p.hp, p.name, id===me?recoil:0, p.expr||"happy");
     if(inv) ctx.globalAlpha = 1; }
   for(let i=particles.length-1;i>=0;i--){ const pt=particles[i]; pt.x+=pt.vx*dt; pt.y+=pt.vy*dt; pt.vx*=.92; pt.vy*=.92; pt.life-=pt.dec*dt;
     if(pt.life<=0){ particles.splice(i,1); continue; }
