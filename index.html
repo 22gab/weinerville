@@ -292,6 +292,43 @@ function wardFaceDraw(u,expr){
   }
   c.lineCap="butt";
 }
+let wardCoals=null;
+function initCoals(){ wardCoals=[]; let seed=7; function rnd(){ seed=(seed*9301+49297)%233280; return seed/233280; }
+  for(let i=0;i<48;i++){ wardCoals.push({x:-104+rnd()*208, y:rnd()*22, r:5+rnd()*8, ph:rnd()*6.28, warm:0.5+rnd()*0.5}); } }
+function drawBrace(c,cx,cy,t){
+  if(!wardCoals) initCoals();
+  const by=cy+50;
+  c.save();
+  const heat=c.createRadialGradient(cx,by,4,cx,by,130);
+  heat.addColorStop(0,"rgba(255,110,20,0.5)"); heat.addColorStop(0.5,"rgba(190,40,10,0.18)"); heat.addColorStop(1,"rgba(0,0,0,0)");
+  c.fillStyle=heat; c.beginPath(); c.ellipse(cx,by,130,44,0,0,7); c.fill();
+  c.fillStyle="#151013"; c.beginPath(); c.ellipse(cx,by+6,116,30,0,0,7); c.fill();
+  for(const k of wardCoals){
+    const fl=0.55+0.45*Math.sin(t*4+k.ph)+0.15*Math.sin(t*11+k.ph*2);
+    const gx=cx+k.x*0.92, gy=by+k.y*0.7;
+    c.fillStyle="#3a1208"; c.beginPath(); c.ellipse(gx,gy+1.5,k.r*0.95,k.r*0.7,0,0,7); c.fill();
+    const hot=Math.max(0,Math.min(1,fl*k.warm));
+    const r=255, g=Math.round(60+120*hot), b=Math.round(10*hot);
+    c.fillStyle="rgba("+r+","+g+","+b+","+(0.55+0.4*hot)+")";
+    c.beginPath(); c.ellipse(gx,gy,k.r*0.7,k.r*0.5,0,0,7); c.fill();
+    if(hot>0.75){ c.fillStyle="rgba(255,240,180,"+((hot-0.75)*2.2)+")"; c.beginPath(); c.ellipse(gx,gy,k.r*0.32,k.r*0.24,0,0,7); c.fill(); }
+  }
+  for(let i=0;i<5;i++){ const fx=cx-70+i*35+Math.sin(t*3+i)*4, base=by-4;
+    const fh=14+Math.sin(t*6+i*2)*8, a=0.25+0.2*Math.sin(t*7+i);
+    const fg=c.createLinearGradient(fx,base,fx,base-fh);
+    fg.addColorStop(0,"rgba(255,150,30,"+a+")"); fg.addColorStop(1,"rgba(255,60,10,0)");
+    c.fillStyle=fg; c.beginPath(); c.moveTo(fx-5,base); c.quadraticCurveTo(fx,base-fh,fx+5,base); c.closePath(); c.fill(); }
+  c.restore();
+}
+function drawHand(c,x,y,ang){
+  c.save(); c.translate(x,y); c.rotate(ang);
+  c.fillStyle="#f0b98a"; c.beginPath(); c.ellipse(0,0,9,7,0,0,7); c.fill();
+  c.fillStyle="#e0a074";
+  for(let i=-1;i<=2;i++){ c.beginPath(); c.roundRect(-3+i*3.5,-9,3,7,1.5); c.fill(); }
+  c.beginPath(); c.roundRect(-9,-1,6,3,1.5); c.fill();
+  c.fillStyle="#c98a5c"; c.beginPath(); c.roundRect(-2,4,10,4,2); c.fill();
+  c.restore();
+}
 function wardDrawSausage(cx,cy,size,hue,expr,spin,sqX,sqY){
   const c=wctx;
   c.save(); c.translate(cx,cy); c.scale(sqX,sqY);
@@ -301,7 +338,7 @@ function wardDrawSausage(cx,cy,size,hue,expr,spin,sqX,sqY){
   c.beginPath(); c.ellipse(hw*0.99,0,size*0.3,size*0.42,0,0,7); c.fill();
   const g=c.createLinearGradient(0,-hh,0,hh);
   g.addColorStop(0,"hsl("+hue+",78%,73%)"); g.addColorStop(0.5,"hsl("+hue+",66%,58%)"); g.addColorStop(1,"hsl("+hue+",62%,45%)");
-  c.shadowBlur=18; c.shadowColor="hsl("+hue+",85%,55%)"; c.fillStyle=g;
+  c.shadowBlur=16; c.shadowColor="hsl("+hue+",85%,55%)"; c.fillStyle=g;
   c.beginPath(); c.roundRect(-hw,-hh,bw,bh,hh); c.fill(); c.shadowBlur=0;
   c.fillStyle="rgba(255,255,255,0.32)"; c.beginPath(); c.ellipse(-hw*0.18,-hh*0.46,bw*0.34,hh*0.34,0,0,7); c.fill();
   const co=Math.cos(spin), si=Math.sin(spin);
@@ -316,18 +353,25 @@ function wardFrame(){
   wardT+=0.016; wardReact=Math.max(0,wardReact-0.045);
   const W=wardCv2.width, H=wardCv2.height, c=wctx;
   c.clearRect(0,0,W,H);
-  const cx=W/2, cy=H/2+6;
-  const flick=0.82+Math.sin(wardT*7)*0.06+Math.sin(wardT*13)*0.04;
-  const bg=c.createRadialGradient(cx,cy+58,6,cx,cy+58,110);
-  bg.addColorStop(0,"rgba(255,120,30,"+(0.5*flick)+")"); bg.addColorStop(0.5,"rgba(200,50,10,"+(0.22*flick)+")"); bg.addColorStop(1,"rgba(0,0,0,0)");
-  c.fillStyle=bg; c.fillRect(0,0,W,H);
-  for(let i=0;i<8;i++){ const px=cx-90+(i*26), py=cy+64+Math.sin(wardT*3+i)*3;
-    c.fillStyle="rgba(255,"+(90+((i*37)%80))+",20,"+(0.35+0.25*Math.sin(wardT*5+i))+")"; c.beginPath(); c.arc(px,py,2.5+Math.sin(wardT*6+i)*1,0,7); c.fill(); }
-  c.strokeStyle="rgba(90,70,60,0.5)"; c.lineWidth=2.5;
-  for(let i=0;i<5;i++){ const gy=cy+50+i*6; c.beginPath(); c.moveTo(cx-95,gy); c.lineTo(cx+95,gy); c.stroke(); }
-  const bob=Math.sin(wardT*2)*5, breath=Math.sin(wardT*2.4)*0.04;
-  c.fillStyle="rgba(0,0,0,0.28)"; c.beginPath(); c.ellipse(cx,cy+48,50,9,0,0,7); c.fill();
-  wardDrawSausage(cx,cy+bob,28,myColor,myExpr,wardT*1.7,1+breath-wardReact*0.14,1-breath+wardReact*0.12);
+  const cx=W/2, cy=H/2-2;
+  drawBrace(c,cx,cy,wardT);
+  const spin=wardT*1.7;
+  const bob=Math.sin(wardT*2)*3, sy=cy+bob;
+  const size=27, bw=size*3.05, hw=bw/2;
+  const rodL=hw+40, rodR=hw+52;
+  c.strokeStyle="#9aa0a8"; c.lineWidth=5; c.lineCap="round";
+  c.beginPath(); c.moveTo(cx-rodL,sy); c.lineTo(cx+rodR,sy); c.stroke();
+  c.strokeStyle="#c8ccd2"; c.lineWidth=2; c.beginPath(); c.moveTo(cx-rodL,sy-1); c.lineTo(cx+rodR,sy-1); c.stroke();
+  c.lineCap="butt";
+  c.strokeStyle="#7a808a"; c.lineWidth=4;
+  c.beginPath(); c.moveTo(cx-hw-30,sy+30); c.lineTo(cx-hw-30,sy-2); c.stroke();
+  c.beginPath(); c.moveTo(cx+hw+34,sy+30); c.lineTo(cx+hw+34,sy-2); c.stroke();
+  const breath=Math.sin(wardT*2.4)*0.04;
+  wardDrawSausage(cx,sy,size,myColor,myExpr,spin,1+breath-wardReact*0.14,1-breath+wardReact*0.12);
+  const crankR=12, hx=cx+rodR, hy=sy;
+  const ex=hx+Math.cos(spin)*crankR, ey=hy+Math.sin(spin)*crankR;
+  c.strokeStyle="#7a808a"; c.lineWidth=4; c.beginPath(); c.moveTo(hx,hy); c.lineTo(ex,ey); c.stroke();
+  drawHand(c,ex,ey,spin+Math.PI/2);
   wardRAF=requestAnimationFrame(wardFrame);
 }
 function renderWardrobe(){ cardBody.innerHTML=buildWardrobeHTML(); wardCv2=document.getElementById("wardCv"); wctx=wardCv2?wardCv2.getContext("2d"):null; }
@@ -665,7 +709,7 @@ function frame(now){
     const hueP = p.color!=null ? p.color : (id===me?40:hueOf(id));
     const inv = p.invincible>0;
     if(inv) ctx.globalAlpha = 0.4+0.35*Math.sin(now/70);
-    sausage(s.sx, s.sy, d.a, 25*ZOOM, hueP, id===me, p.hp, p.name, id===me?recoil:0, p.expr||"happy");
+    sausage(s.sx, s.sy, d.a, 22*ZOOM, hueP, id===me, p.hp, p.name, id===me?recoil:0, p.expr||"happy");
     if(inv) ctx.globalAlpha = 1; }
   for(let i=particles.length-1;i>=0;i--){ const pt=particles[i]; pt.x+=pt.vx*dt; pt.y+=pt.vy*dt; pt.vx*=.92; pt.vy*=.92; pt.life-=pt.dec*dt;
     if(pt.life<=0){ particles.splice(i,1); continue; }
